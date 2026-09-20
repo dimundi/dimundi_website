@@ -29,7 +29,7 @@ set "ANSWER="
 set /p "ANSWER=Wyslac nginx.conf na serwer? [t/n]: "
 if /i not "%ANSWER%"=="t" exit /b 0
 
-ssh -i "%SSH_KEY%" "%TARGET%" "mkdir -p %REMOTE_DIR%"
+ssh -i "%SSH_KEY%" "%TARGET%" "mkdir -p %REMOTE_DIR%/mail-conf"
 if errorlevel 1 goto error
 scp -i "%SSH_KEY%" nginx.conf "%TARGET%:%REMOTE_DIR%/nginx.conf.upload"
 if errorlevel 1 goto error

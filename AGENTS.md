@@ -11,5 +11,7 @@ Ten plik zawiera uzgodnienia dotyczące pracy nad projektem. Uzupełniamy go w m
 
 ## Produkcja
 
-- Przed pracami dotyczącymi wdrożenia, infrastruktury lub konfiguracji produkcyjnej przeczytaj [docs/deploy.md](docs/deploy.md) i stosuj zapisane tam ustalenia.
-- Nowe uzgodnienia i uwagi dotyczące deploya zapisuj w `docs/deploy.md`.
+- Przed pracami dotyczącymi wdrożenia, infrastruktury lub konfiguracji produkcyjnej przeczytaj [dimundiWwwDocs/deploy.md](dimundiWwwDocs/deploy.md) i stosuj zapisane tam ustalenia.
+- Nowe uzgodnienia i uwagi dotyczące deploya zapisuj w `dimundiWwwDocs/deploy.md`.
+- Dokumentacja jest vaultem Obsidiana w `dimundiWwwDocs/`; katalogi `.obsidian/` wykluczamy z Gita.
+- Dokumentację poczty uzupełniaj na bieżąco podczas wdrażania w [dimundiWwwDocs/email.md](dimundiWwwDocs/email.md). Pisz bardzo skrótowo: moduły, konfiguracja i stan wdrożenia, bez rozbudowanych opisów i sekretów.

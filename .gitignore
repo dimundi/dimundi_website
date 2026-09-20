@@ -3,6 +3,9 @@
 .env.*.local
 backend/.env
 /deploy.config
+/poczta/data/
+/poczta/secrets/
+/proxy/deploy_proxy/mail-conf/
 /proxy/deploy_proxy/letsencrypt/
 /proxy/deploy_proxy/acme/
 /proxy/deploy_proxy/https.enabled
@@ -14,3 +17,4 @@ npm-debug.log*
 .DS_Store
 .agents/
 .vscode/
+.obsidian/

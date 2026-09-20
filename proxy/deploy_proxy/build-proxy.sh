@@ -8,6 +8,7 @@ if [[ "${answer^^}" != T ]]; then
     exit 0
 fi
 
+mkdir -p mail-conf
 docker compose -f compose.yml config --quiet
 docker compose -f compose.yml build --pull
 docker compose -f compose.yml run --rm --no-deps proxy nginx -t

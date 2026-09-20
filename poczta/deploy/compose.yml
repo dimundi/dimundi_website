@@ -1,0 +1,67 @@
+name: dimundi-mail
+
+services:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:16.0.1
+    hostname: poczta.dimundi.com
+    env_file: mailserver.env
+    restart: unless-stopped
+    stop_grace_period: 1m
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "145.239.92.71:25:25"
+      - "145.239.92.71:465:465"
+      - "145.239.92.71:587:587"
+      - "145.239.92.71:993:993"
+    volumes:
+      - ../data/mail:/var/mail
+      - ../data/state:/var/mail-state
+      - ../data/logs:/var/log/mail
+      - ../data/config:/tmp/docker-mailserver
+      - /home/docker/dimundi/proxy/letsencrypt:/etc/letsencrypt:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      default:
+        aliases:
+          - poczta.dimundi.com
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  roundcube:
+    image: roundcube/roundcubemail:1.6.19-apache
+    restart: unless-stopped
+    environment:
+      ROUNDCUBEMAIL_DB_TYPE: sqlite
+      ROUNDCUBEMAIL_DEFAULT_HOST: ssl://poczta.dimundi.com
+      ROUNDCUBEMAIL_DEFAULT_PORT: 993
+      ROUNDCUBEMAIL_SMTP_SERVER: tls://poczta.dimundi.com
+      ROUNDCUBEMAIL_SMTP_PORT: 587
+      ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE: 25M
+      ROUNDCUBEMAIL_PLUGINS: archive,zipdownload
+    volumes:
+      - ../data/roundcube-db:/var/roundcube/db
+      - ./roundcube.php:/var/roundcube/config/custom.php:ro
+    secrets:
+      - roundcube_des_key
+    depends_on:
+      mailserver:
+        condition: service_healthy
+    networks:
+      default:
+      proxy:
+        aliases:
+          - dimundi-webmail
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+secrets:
+  roundcube_des_key:
+    file: ../secrets/roundcube_des_key
+
+networks:
+  proxy:
+    external: true
+    name: dimundi-proxy_default
