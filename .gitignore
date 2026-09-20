@@ -3,6 +3,10 @@
 .env.*.local
 backend/.env
 /deploy.config
+/proxy/deploy_proxy/letsencrypt/
+/proxy/deploy_proxy/acme/
+/proxy/deploy_proxy/https.enabled
+/proxy/deploy_proxy/.certbot.lock
 
 node_modules/
 *.log

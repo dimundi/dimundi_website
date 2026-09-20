@@ -33,15 +33,17 @@ ssh -i "%SSH_KEY%" "%TARGET%" "mkdir -p %REMOTE_DIR%"
 if errorlevel 1 goto error
 scp -i "%SSH_KEY%" nginx.conf "%TARGET%:%REMOTE_DIR%/nginx.conf.upload"
 if errorlevel 1 goto error
+scp -i "%SSH_KEY%" nginx-https.conf "%TARGET%:%REMOTE_DIR%/nginx-https.conf.upload"
+if errorlevel 1 goto error
 rem Preserve the inode so the running container sees the updated bind-mounted file.
-ssh -i "%SSH_KEY%" "%TARGET%" "set -e; cd %REMOTE_DIR%; if [ -f nginx.conf ]; then cp -p nginx.conf nginx.conf.bak; fi; cat nginx.conf.upload > nginx.conf; rm nginx.conf.upload"
+ssh -i "%SSH_KEY%" "%TARGET%" "set -e; cd %REMOTE_DIR%; if [ -f nginx.conf ]; then cp -p nginx.conf nginx.conf.bak; fi; mv nginx-https.conf.upload nginx-https.conf; if [ -f https.enabled ]; then cat nginx-https.conf > nginx.conf; else cat nginx.conf.upload > nginx.conf; fi; rm nginx.conf.upload"
 if errorlevel 1 goto error
 echo Konfiguracja wyslana. Poprzednia wersja, jesli istniala: nginx.conf.bak.
 
 set "ANSWER="
-set /p "ANSWER=Wyslac tez Dockerfile, compose.yml i build-proxy.sh? [t/n]: "
+set /p "ANSWER=Wyslac tez Dockerfile, Compose i skrypty budowania oraz HTTPS? [t/n]: "
 if /i not "%ANSWER%"=="t" goto reload
-scp -i "%SSH_KEY%" Dockerfile compose.yml build-proxy.sh "%TARGET%:%REMOTE_DIR%/"
+scp -i "%SSH_KEY%" Dockerfile compose.yml build-proxy.sh setup-https.sh renew-cert.sh install-renewal.sh "%TARGET%:%REMOTE_DIR%/"
 if errorlevel 1 goto error
 
 :reload

@@ -6,6 +6,7 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       - type: bind
         source: ./nginx.conf
@@ -13,3 +14,12 @@ services:
         read_only: true
         bind:
           create_host_path: false
+      - ./acme:/var/www/certbot:ro
+      - ./letsencrypt:/etc/letsencrypt:ro
+
+  certbot:
+    image: certbot/certbot:v5.8.0
+    profiles: [tools]
+    volumes:
+      - ./acme:/var/www/certbot
+      - ./letsencrypt:/etc/letsencrypt

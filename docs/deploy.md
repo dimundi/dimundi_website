@@ -29,7 +29,7 @@ Tutaj zapisujemy ustalenia i uwagi dotyczące wdrożenia projektu. Uzupełniamy 
 
 ## Wdrożenie proxy
 
-- Pliki produkcyjnego proxy znajdują się w `proxy/deploy/`; testowe pozostają osobno.
+- Pliki produkcyjnego proxy znajdują się w `proxy/deploy_proxy/`; testowe pozostają osobno.
 - Obraz proxy budujemy na VPS. To zastępuje wcześniejszy plan lokalnego budowania i przesyłania obrazu `.tar`.
 - Na VPS nie używamy Gita. Pliki kopiujemy przez SSH/SCP.
 - VPS: Debian 13, amd64, Docker i Docker Compose zainstalowane. SSH: `docker@145.239.92.71`, port 22, uwierzytelnianie kluczem.
@@ -39,7 +39,7 @@ Tutaj zapisujemy ustalenia i uwagi dotyczące wdrożenia projektu. Uzupełniamy 
 
 ### Instalacja z Windows
 
-Uruchom `proxy/deploy/install-proxy.bat`. Potwierdzenia mają postać `t/n` (wielkość liter nie ma znaczenia); tylko `t` zatwierdza operację. Skrypt pyta osobno:
+Uruchom `proxy/deploy_proxy/install-proxy.bat`. Potwierdzenia mają postać `t/n` (wielkość liter nie ma znaczenia); tylko `t` zatwierdza operację. Skrypt pyta osobno:
 
 1. Czy wysłać `nginx.conf`? Tylko `t` rozpoczyna wysyłanie; inna odpowiedź kończy skrypt.
 2. Czy wysłać również `Dockerfile`, `compose.yml` i `build-proxy.sh`? `n` pomija ten etap i przechodzi do kolejnego pytania.
@@ -60,7 +60,7 @@ Skrypt serwerowy pyta o budowanie, buduje obraz, sprawdza konfigurację w tymcza
 
 - Oddzielny projekt Compose `dimundi-proxy`, port 80, konfiguracja Nginx jako bind mount tylko do odczytu.
 - Proxy HTTP pod `http://vps-f9b377ab.vps.ovh.net` zostało uruchomione przez użytkownika z odpowiedzią „Proxy działa”. Nowa lokalna konfiguracja przekazuje ruch do `dimundi-frontend`; wyślij ją dopiero po uruchomieniu aplikacji.
-- Docelowo `dimundi.com`, przekierowanie `www` na domenę bez `www`. DNS starej strony na razie pozostaje bez zmian.
+- Domena główna: `dimundi.com`. `www.dimundi.com`, `dimundi.pl` i `www.dimundi.pl` przekierowują na `https://dimundi.com` z zachowaniem ścieżki i parametrów. Użytkownik zgłosił zmianę DNS na VPS; propagację trzeba zweryfikować przed certyfikatem.
 - Frontend jest przesyłany jako pliki do katalogu hosta, montowane tylko do odczytu.
 
 ## Wdrożenie aplikacji
@@ -100,7 +100,7 @@ Odpowiedz `t` na pytanie o budowanie, a po pomyślnym sprawdzeniu konfiguracji �
 **4. Lokalnie: przełącz działające proxy na stronę.**
 
 ```powershell
-.\proxy\deploy\install-proxy.bat
+.\proxy\deploy_proxy\install-proxy.bat
 ```
 
 | Pytanie skryptu | Odpowiedź |
@@ -145,18 +145,103 @@ bash build.sh
 
 Skrypt pyta osobno o budowanie i uruchomienie (`t/n`), sprawdza konfigurację Nginx, czeka na uruchomienie usług i sprawdza odpowiedź frontendu. Backend ma healthcheck `/health`. Poprawność danych SMTP oraz wysyłkę formularza trzeba sprawdzić osobno.
 
-4. Dopiero po uruchomieniu aplikacji uruchom lokalnie `proxy/deploy/install-proxy.bat`: wyślij nowy `nginx.conf`, pomiń pliki wdrożenia (`n`), zatwierdź sprawdzenie i reload (`t`). Proxy nie wymaga przebudowy. Wysłanie tej konfiguracji przed uruchomieniem aplikacji spowoduje odpowiedzi 502.
+4. Dopiero po uruchomieniu aplikacji uruchom lokalnie `proxy/deploy_proxy/install-proxy.bat`: wyślij nowy `nginx.conf`, pomiń pliki wdrożenia (`n`), zatwierdź sprawdzenie i reload (`t`). Proxy nie wymaga przebudowy. Wysłanie tej konfiguracji przed uruchomieniem aplikacji spowoduje odpowiedzi 502.
 
-Projekt `dimundi-app` nie publikuje portów hosta. Frontend dołącza do istniejącej sieci `dimundi-proxy_default` z aliasem `dimundi-frontend`. Backend jest dostępny tylko w sieci aplikacji, z dostępem wychodzącym do SMTP. SSI i `/api/` obsługuje frontend. Produkcyjny CORS jest ustawiony na adres HTTP VPS.
+Projekt `dimundi-app` nie publikuje portów hosta. Frontend dołącza do istniejącej sieci `dimundi-proxy_default` z aliasem `dimundi-frontend`. Backend jest dostępny tylko w sieci aplikacji, z dostępem wychodzącym do SMTP. SSI i `/api/` obsługuje frontend. Produkcyjny CORS jest ustawiony na `https://dimundi.com`; po wysłaniu zaktualizowanego Compose trzeba odtworzyć backend.
 
 Kopiowanie plików jest wykonywane w miejscu; frontend może od razu pokazać zmiany. Skrypt nie usuwa starych plików i nie zapewnia atomowego wdrożenia. Zmiany backendu i jego środowiska wymagają ponownego uruchomienia `build.sh`. Nie umieszczaj sekretów w katalogu `frontend/`, którego zawartość jest wysyłana jako publiczna strona.
 
+## HTTPS — pierwsze uruchomienie
+
+Certbot działa w osobnym, uruchamianym na czas operacji kontenerze (profil Compose `tools`). Weryfikacja HTTP-01 korzysta z katalogu `acme/` wspólnego z Nginx. Certyfikaty i konto ACME są zapisywane wyłącznie na VPS w `/home/docker/dimundi/proxy/letsencrypt/`; Nginx ma dostęp tylko do odczytu. Nie kopiuj tego katalogu do repozytorium. W kopii zapasowej serwera uwzględnij cały katalog `letsencrypt`, z ograniczonym dostępem do kluczy.
+
+Dokumentacja: [Certbot — instalacja w Dockerze](https://eff-certbot.readthedocs.io/en/stable/install.html), [polecenia certonly i renew](https://eff-certbot.readthedocs.io/en/stable/man/certbot.html).
+
+### 1. DNS i dostępność
+
+Wszystkie cztery nazwy (`dimundi.com`, `www.dimundi.com`, `dimundi.pl`, `www.dimundi.pl`) muszą wskazywać na VPS: IPv4 `145.239.92.71`, a jeśli mają AAAA — IPv6 `2001:41d0:601:1100::9fec`. Nazwy `www` mogą być rekordami CNAME do odpowiednich domen głównych. Nie zmieniaj rekordów MX ani pozostałych ustawień poczty. Porty TCP 80 i 443 muszą być dostępne z Internetu; port 80 pozostaje potrzebny do odnowień. Sprawdź też istniejące rekordy CAA, jeśli wystawienie certyfikatu jest blokowane.
+
+Nie zakładamy, że DNS już się rozpropagował. Skrypt wykona próbę Certbota `--dry-run` przed wystawieniem właściwego certyfikatu. Niepowodzenie zatrzyma procedurę; popraw DNS/dostępność i ponów ją później.
+
+### 2. Wyślij pliki proxy z Windows
+
+Z katalogu projektu:
+
+```powershell
+.\proxy\deploy_proxy\install-proxy.bat
+```
+
+Odpowiedz kolejno **`t`, `t`, `n`**: wyślij konfigurację, wyślij Compose i skrypty, pomiń sam reload. Dodajemy nowe montowania i port 443, dlatego istniejący kontener musi zostać odtworzony przez następny skrypt.
+
+Instalator wysyła zarówno szablon HTTP, jak i `nginx-https.conf`. Jeśli na VPS istnieje znacznik `https.enabled`, zachowuje tryb HTTPS przy kolejnych aktualizacjach. Nie usuwaj tego znacznika podczas zwykłego wdrożenia.
+
+### 3. Na VPS uruchom konfigurację HTTPS
+
+Jako użytkownik `docker`:
+
+```sh
+cd /home/docker/dimundi/proxy
+bash setup-https.sh
+```
+
+Skrypt kolejno:
+
+1. Pyta `t/n` o odtworzenie proxy z montowaniami ACME i portem 443. To może spowodować krótką przerwę w obsłudze strony. Używa już zbudowanego obrazu proxy.
+2. Pyta o adres e-mail konta Let's Encrypt oraz o zgodę na warunki usługi i próbną weryfikację domen. Adres nie jest zapisany w repozytorium.
+3. Po poprawnej próbie pyta `t/n` o wystawienie produkcyjnego certyfikatu obejmującego wszystkie cztery nazwy.
+4. Pyta `t/n` o włączenie HTTPS i przekierowań. Zachowuje dotychczasową konfigurację jako `nginx.conf.before-https`, sprawdza `nginx -t`, przeładowuje Nginx i zapisuje znacznik `https.enabled`. Przy błędzie sprawdzenia przywraca poprzedni plik.
+5. Uruchamia instalację zadania odnawiania z osobnym pytaniem `t/n`. Odmowa oznacza, że automatyczne odnawianie NIE jest skonfigurowane.
+
+Jeśli brakuje `crontab`, z konta `debian` wykonaj:
+
+```sh
+sudo apt-get install cron
+sudo systemctl enable --now cron
+```
+
+Następnie wróć do konta `docker` i wykonaj:
+
+```sh
+cd /home/docker/dimundi/proxy
+bash install-renewal.sh
+```
+
+Nie trzeba ponownie wystawiać certyfikatu, aby dodać samo odnawianie.
+
+### 4. Zaktualizuj konfigurację aplikacji
+
+Compose aplikacji ma teraz `CORS_ORIGIN: https://dimundi.com`. Wyślij pliki przez `deploy/install.bat` (pomiń `.env`, jeśli dane się nie zmieniają), następnie jako `docker`:
+
+```sh
+cd /home/docker/dimundi/app/deploy
+bash build.sh
+```
+
+Potwierdź budowanie i uruchomienie. Sprawdź stronę oraz formularz pod docelową domeną.
+
+### 5. Sprawdź HTTPS i odnawianie
+
+Otwórz `https://dimundi.com`. Pozostałe trzy nazwy przez HTTP i HTTPS mają przekierować na tę domenę. Sprawdź również adres z podstroną i parametrem, np. `https://dimundi.pl/contact.html?test=1`. Nazwa techniczna VPS nie jest objęta certyfikatem; używaj jej tylko przez HTTP, które po aktywacji przekieruje na domenę główną.
+
+Na VPS jako `docker`:
+
+```sh
+cd /home/docker/dimundi/proxy
+bash renew-cert.sh --dry-run
+crontab -l
+systemctl is-active cron
+```
+
+Próba odnowienia korzysta ze środowiska testowego Let's Encrypt i nie zastępuje produkcyjnego certyfikatu. Sprawdź jej zakończenie bez błędów. Zadanie działa o 03:17 i 15:17 czasu VPS, odnawia certyfikat, gdy jest to potrzebne, a następnie sprawdza i przeładowuje Nginx. `flock` chroni przed równoległymi operacjami. Pozostałe wpisy crontab są zachowane; ponowne uruchomienie instalatora nie dubluje zadania.
+
+Log zadania: `/home/docker/dimundi/proxy/renew-cert.log`. Monitoruj błędy oraz datę ważności certyfikatu; log wymaga okresowego porządkowania. Skrypt nie wymaga montowania gniazda Dockera wewnątrz kontenera Certbota.
+
 ## Do ustalenia
 
-- Sposób uzyskiwania i odnawiania certyfikatów HTTPS.
-- Przełączenie aplikacji na domenę docelową (w tym CORS_ORIGIN).
+- Wykonanie przygotowanej procedury HTTPS i potwierdzenie automatycznego odnawiania.
+- Potwierdzenie działania domen i formularza po przełączeniu na HTTPS.
 - Rozwiązanie pocztowe.
 
 ## Stan wdrożenia
 
-Użytkownik potwierdził działanie początkowego proxy HTTP. Konfiguracja aplikacji i nowa konfiguracja proxy zostały przygotowane lokalnie; nie wysłano ich ani nie uruchomiono w ramach tej zmiany.
+Użytkownik uruchomił proxy i aplikację oraz zgłosił zmianę DNS. Konfiguracja HTTPS i skrypty certyfikatów są przygotowane lokalnie. Certyfikatu jeszcze nie wystawiono w ramach tej pracy; nie wykonano zdalnych zmian HTTPS.
