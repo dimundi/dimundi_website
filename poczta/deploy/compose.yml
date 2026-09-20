@@ -19,6 +19,8 @@ services:
       - ../data/state:/var/mail-state
       - ../data/logs:/var/log/mail
       - ../data/config:/tmp/docker-mailserver
+      - ./fail2ban-jail.cf:/tmp/docker-mailserver/fail2ban-jail.cf:ro
+      - ./ignore-roundcube.sh:/usr/local/bin/ignore-roundcube.sh:ro
       - /home/docker/dimundi/proxy/letsencrypt:/etc/letsencrypt:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
@@ -50,6 +52,8 @@ services:
         condition: service_healthy
     networks:
       default:
+        aliases:
+          - dimundi-roundcube
       proxy:
         aliases:
           - dimundi-webmail

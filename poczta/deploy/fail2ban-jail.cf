@@ -1,0 +1,3 @@
+[DEFAULT]
+# Check Docker DNS at each failure; do not whitelist a subnet or a stale IP.
+ignorecommand = /bin/bash /usr/local/bin/ignore-roundcube.sh <ip>
