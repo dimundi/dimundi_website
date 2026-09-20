@@ -1,0 +1,5 @@
+# Skopiuj ten plik jako deploy.config w glownym katalogu projektu.
+# Wpisz pelna sciezke do prywatnego klucza OpenSSH (nie .pub ani .ppk).
+# Bez cudzyslowow, bez zmiennych typu %USERPROFILE%, bez spacji wokol =.
+# deploy.config jest lokalny, ignorowany przez Git i nie jest wysylany na VPS.
+SSH_KEY=C:\sciezka\do\klucza\dimundi_vps
