@@ -1,87 +1,84 @@
-# Poczta
+# Poczta — konfiguracja i stan
 
-Stan: użytkownik wykonał procedurę uruchomienia na VPS. DNS nadawcy przygotowany; migracja i testy produkcyjne pozostają do wykonania, MX bez zmian.
+Instrukcja postawienia środowiska od zera: [email-instalacja.md](email-instalacja.md). Wdrożenie strony i proxy: [deploy.md](deploy.md).
 
-## Moduły — plan
+Konfiguracja programu pocztowego: [thunderbird.md](thunderbird.md).
 
-- Docker Mailserver: SMTP/IMAP, osobny kontener.
-- Roundcube: webmail, osobny kontener; główny dostęp przez programy pocztowe.
-- Istniejące proxy Nginx: HTTPS dla webmaila.
-- Wiadomości: trwały katalog poza kontenerem.
-- Pozostajemy przy Docker Mailserver + Roundcube. Obecne zasoby VPS nie są sztywnym ograniczeniem: użytkownik dopuszcza rozbudowę w razie potrzeby. Przed migracją sprawdzić RAM i dysk z zapasem; ewentualną rozbudowę uzgodnić z użytkownikiem.
+## Konfiguracja
 
-## Konfiguracja — ustalenia
+| Element | Ustalenie |
+| --- | --- |
+| VPS | Debian 13, `145.239.92.71`, konto SSH `docker`, katalog `/home/docker/dimundi` |
+| Poczta | `poczta.dimundi.com`; SMTP/IMAP przez Docker Mailserver `16.0.1` |
+| Webmail | `https://webmail.dimundi.com`; Roundcube `1.6.19-apache`, SQLite, istniejące proxy Nginx |
+| Domeny | `dimundi.com`; `dimundi.pl` jako jawne aliasy, bez catch-all |
+| Skrzynki | `marcin@dimundi.com`, `beata@dimundi.com`; login pełnym adresem |
+| Aliasy | `marcin@dimundi.pl`, `beata@dimundi.pl`; `postmaster` i `abuse` obu domen → Marcin |
+| Porty | IPv4: 25 SMTP, 465 SMTP TLS, 587 SMTP STARTTLS, 993 IMAP TLS; POP3 i poczta po IPv6 wyłączone |
+| Ochrona | Rspamd + Redis, ClamAV, Fail2Ban; SMTP użytkowników wymaga uwierzytelnienia |
+| DKIM | Selektor `dimundi2026`, osobne klucze dla `.com` i `.pl` |
+| Certyfikat | Nazwa `poczta.dimundi.com`, obejmuje także `webmail.dimundi.com` |
 
-- Katalog plików wdrożenia w repozytorium: `poczta/deploy/`.
-- Nowy serwer SMTP/IMAP: `poczta.dimundi.com`; użytkownik dodał rekord A na `145.239.92.71`. Webmail: `webmail.dimundi.com`. MX pozostaje bez zmian do migracji i testów.
-- Domena: `dimundi.com`; `dimundi.pl` jako alias.
-- Skrzynki do migracji: `marcin`, `beata`; bez kosza.
-- Źródło: VPS `51.178.19.126`, Postfix + Dovecot; SSH `marcin`, port 22, bez sudo.
-- Rozmiar: Marcin około 12 GB bez kosza, Beata do 500 MB (deklaracja użytkownika).
-- `whatthefrog.pl`: poza obecnym etapem, pozostaje na OVH Exchange.
-- Porty, nazwy hostów, katalogi, certyfikaty i kopie zapasowe: dopisać podczas wdrażania.
+`whatthefrog.pl` pozostaje na OVH Exchange — osobny, późniejszy etap. Zasoby VPS można rozbudować; przed migracją sprawdzić RAM i dysk z zapasem. Ostatni pomiar: 3,7 GiB RAM, dysk 40 GB, około 35 GB wolnego przed migracją.
 
-## Kontrola VPS — 2026-09-20
+## Pliki i kontenery
 
-- Nowy VPS `145.239.92.71`: 3,7 GiB RAM, dostępne 3,2 GiB; brak swap. Dysk 40 GB, wolne około 35 GB.
-- Wyjście TCP/25 IPv4: połączenia SMTP do Gmail i OVH poprawne; bez wysyłania wiadomości. Wejście z Internetu i dostarczalność jeszcze niesprawdzone.
-- Lokalna usługa nasłuchuje na `127.0.0.1:25` i `[::1]:25`; ustalić usługę przed publikacją portu kontenera. Porty 465/587/993 nie mają listenerów.
-- MX obu domen: `mail.dimundi.com`, A `137.74.32.110`. Użytkownik potwierdził w panelu OVH, że jest to Additional IP przypisany do starego VPS; `51.178.19.126` jest adresem użytym do SSH. Nie zmieniać MX/A ani przypisania Additional IP przed migracją poczty.
-- `137.74.32.110`: kandydat dla przyszłej poczty WhatTheFrog. Po zakończeniu migracji Dimundi sprawdzić możliwość przeniesienia na docelowy VPS i skonfigurować oddzielnie; obecnie adres obsługuje starą pocztę Dimundi.
-- `webmail.dimundi.com` wskazuje na nowy VPS. PTR nowego IPv4 nadal `vps-f9b377ab.vps.ovh.net`; docelowy PTR ustalić przy konfiguracji poczty.
-- Wykonano tylko odczyty i test połączeń. Bez instalacji i zmian DNS.
+Dodawanie kolejnej skrzynki: na VPS jako `docker` uruchom `cd ~/dimundi/poczta/deploy`, następnie `bash add-account.sh`. Skrypt pyta o nazwę/adres `.com`, opcjonalny alias `.pl` i potwierdzenie `t/n`; hasło podaje się w ukrytym monicie DMS. Sprawdza kolizje z istniejącymi kontami i aliasami, bez nadpisywania haseł. Wymaga działającego kontenera. Plik wysyła istniejący `poczta/deploy/install.bat`. `accounts.sh` pozostaje do pierwszej instalacji Marcina, Beaty i aliasów technicznych.
 
-## Przygotowana konfiguracja
+- Repo: `poczta/deploy/`, projekt Compose `dimundi-mail`. Instalatory kopiują przez SSH/SCP; na VPS nie używamy Gita.
+- VPS: `/home/docker/dimundi/poczta/deploy/`; obok `data/{mail,state,logs,config,roundcube-db}` i `secrets/roundcube_des_key`. Dane, klucze i hasła poza Gitem.
+- Proxy: `/home/docker/dimundi/proxy/`; aktywna konfiguracja poczty `mail-conf/poczta.conf`, certyfikaty w `letsencrypt/`. Nginx czyta konfigurację z bind mount.
+- Roundcube nie publikuje portu hosta. Do proxy dołącza przez sieć `dimundi-proxy_default`, alias `dimundi-webmail`; do IMAP/SMTP łączy się po prywatnej sieci przez TLS z weryfikacją certyfikatu.
+- Lokalny `deploy.config` zawiera `SSH_KEY`; wzór `deploy.config_tmp`. Nie wysyłamy klucza prywatnego na VPS. Logowanie hasłem do `debian` pozostaje włączone.
 
-- Compose `dimundi-mail`: Docker Mailserver `16.0.1`, Roundcube `1.6.19-apache` z SQLite (dwie skrzynki, okazjonalny webmail).
-- DMS: Postfix, Dovecot, Rspamd + Redis, ClamAV, Fail2Ban. Wysyłanie wymaga uwierzytelnienia; POP3 wyłączony.
-- Porty wyłącznie na IPv4 `145.239.92.71`: 25 (serwery), 465 (SMTP TLS), 587 (SMTP STARTTLS), 993 (IMAP TLS). Lokalny listener 127.0.0.1:25 pozostaje nietknięty. IPv6 poczty na razie wyłączony.
-- VPS: `/home/docker/dimundi/poczta/deploy/`. Dane: sąsiedni `data/` (mail, state, logs, config, roundcube-db); klucz sesji: `secrets/roundcube_des_key`. Dane/sekrety ignorowane przez Git i niewysyłane przez instalator.
-- Roundcube: HTTPS przez istniejące proxy, sieć `dimundi-proxy_default`; brak publicznego portu kontenera webmaila. Do DMS łączy się przez TLS po prywatnej sieci z weryfikacją certyfikatu. Login: pełny adres skrzynki.
-- Certyfikat `poczta.dimundi.com` obejmuje też `webmail.dimundi.com`; istniejący Certbot i katalog `proxy/letsencrypt`. Zaktualizowany cron proxy odnawia wszystkie certyfikaty. DMS wykrywa zmiany certyfikatów i przeładowuje Postfix/Dovecot; Nginx przeładowuje skrypt cron.
-- Aliasowanie `.pl` jest jawne: Marcin i Beata, bez catch-all. `postmaster` i `abuse` obu domen trafiają do Marcina.
-- DKIM: selektor `dimundi2026`, oddzielne klucze dla `.com` i `.pl`, tworzone tylko na VPS. Stary selektor `mail` pozostaje bez zmian.
+## Certyfikaty i ochrona webmaila
 
-## Uruchomienie — kolejność
+- Fail2Ban: w repo przygotowano i lokalnie sprawdzono dla `postfix` i `dovecot` 6 błędów / 10 minut → 15 minut blokady, `bantime.increment=true`, podwajanie (`factor=1`) do maks. 24 godzin. Historia osobna dla każdego jaila; wcześniejsze blokady zapisane w bazie mogą wpłynąć na kolejną karę. Wyjątek Roundcube zachowany, `custom` bez zmian (180 dni).
+- Wdrożenie nowych czasów na VPS jeszcze niepotwierdzone. Ostatni odczyt przed zmianą: 6 błędów / 7 dni → 7 dni blokady. Zmiana pliku i reload nie oznaczają automatycznego usunięcia istniejących banów.
+- Cron użytkownika `docker`: odnowienia o **03:17 i 15:17** czasu VPS, skrypt `proxy/renew-cert.sh`, log `proxy/renew-cert.log`.
+- Certbot odnawia wszystkie certyfikaty. Nginx wykonuje kontrolę konfiguracji i reload; DMS wykrywa nowe certyfikaty i przeładowuje usługi. Nie potrzeba ręcznego restartu kontenera po każdym odnowieniu.
+- Fail2Ban pomija wyłącznie aktualny prywatny IP aliasu `dimundi-roundcube` (`fail2ban-jail.cf`, `ignore-roundcube.sh`). Nie wykluczamy całej sieci Docker.
+- Nginx ogranicza POST webmaila do 30/min/IP, z buforem 15; nadmiar → HTTP 429. Limit obejmuje również operacje po zalogowaniu. GET bez limitu; użytkownicy za wspólnym publicznym IP dzielą limit.
+- Wyjątek Roundcube i limit POST zostały wdrożone; bieżąca konfiguracja zawiera je również dla nowych instalacji.
 
-Polecenia lokalne wykonuj w PowerShell na Windows z głównego katalogu projektu, nie z katalogu dokumentacji ani na VPS:
+## Stan na 2026-09-21
 
-```powershell
-cd D:\GIT\Dimundi\dimundi_landing_page
-.\proxy\deploy_proxy\install-proxy.bat
-```
+- Kontenery i HTTPS uruchomione. Użytkownik potwierdził logowanie do Roundcube oraz wysyłkę do Gmail; nagłówki potwierdziły **SPF, DKIM i DMARC = pass**, połączenie TLS.
+- A `poczta.dimundi.com` i `webmail.dimundi.com` → `145.239.92.71`. PTR tego IP → `poczta.dimundi.com`.
+- SPF obu domen uwzględnia nowy VPS; dotychczasowi nadawcy zachowani na czas migracji. DKIM obu domen zgodny z wygenerowanymi kluczami. DMARC obu domen: `v=DMARC1; p=none`.
+- **MX obu domen nadal wskazuje `mail.dimundi.com` → `137.74.32.110`**, Additional IP starego VPS. Dostęp SSH do starego VPS: `51.178.19.126`. Nie przenosimy Additional IP przed zakończeniem migracji; później kandydat dla WhatTheFrog.
+- Kopie obu skrzynek przeniesione i zweryfikowane. Do wykonania: potwierdzenie logowania Thunderbirda po odblokowaniu IP, końcowa synchronizacja najnowszych wiadomości i przełączenie MX, test odbioru z Internetu i blokady otwartego relay, kontrola DNS używanego przez DNSBL oraz zasobów z ClamAV, pełna kopia nowego środowiska i test odtwarzania. Sprawdzić też zgłoszone ostrzeżenie Rspamd o `task_timeout`.
+- Thunderbird, 2026-09-21: brak połączenia na 993 spowodowała blokada publicznego IP klienta w jailu **postfix**, po sześciu nieudanych próbach. Jail `dovecot` był pusty. Usunięto wyłącznie blokadę klienta (`fail2ban-client set postfix unbanip <IP>`), bez stałego wyjątku i restartów. Po odblokowaniu potwierdzono z komputera TCP/993, poprawny certyfikat TLS i banner IMAP oraz banner SMTP/587. Przy podobnym błędzie sprawdzać wszystkie jaile, nie tylko Dovecot. OVH Network Firewall według użytkownika niewłączony.
+- Ustalenie: pozostajemy przy lekkim DMS + Roundcube, bez panelu administracyjnego. Konta i aliasy przez SSH; po migracji dodać użytkownikowi zmianę własnego hasła w Roundcube z podaniem obecnego hasła. Funkcja jeszcze niewdrożona.
 
-1. Lokalnie: `.\proxy\deploy_proxy\install-proxy.bat`, odpowiedzi `t/t/n`. Na VPS jako `docker`: `cd /home/docker/dimundi/proxy`, potem `bash build-proxy.sh` (`t/t`). Dodaje montowanie `mail-conf` i aktualizuje odnawianie; chwilowo odtwarza proxy.
-2. Lokalnie: `poczta/deploy/install.bat` (`t`). Korzysta z głównego `deploy.config`; tylko wysyła jawnie wymienione pliki.
-3. Na VPS jako `docker`: `cd /home/docker/dimundi/poczta/deploy`. Dalej wszystkie polecenia z tego katalogu.
-4. `bash build.sh`: `t` na przygotowanie/pobranie, `n` na uruchomienie. Gotowe obrazy — nie budujemy własnych Dockerfile.
-5. `bash setup-tls.sh`: potwierdzenia `t/n`, e-mail Let's Encrypt, próbna weryfikacja i produkcyjny certyfikat. Włącza webmail w proxy; przed startem Roundcube odpowiedź 502 jest spodziewana.
-6. `bash accounts.sh`: tworzy konta z hasłami wpisywanymi w ukrytym monicie, potem aliasy. Przy ponowieniu pomijaj istniejące konta; nie nadpisuj haseł przypadkiem.
-7. `bash build.sh`: `t/t`. Czeka na zdrowy serwer i uruchamia Roundcube. Pierwszy start ClamAV może potrwać dłużej; przy timeout sprawdź `docker compose -f compose.yml logs --tail=100` oraz `ps`.
-8. `bash dkim.sh`: generuje brakujące klucze i pokazuje publiczne rekordy TXT; nie edytuje DNS.
-9. Sprawdź webmail, IMAP/SMTP i `bash /home/docker/dimundi/proxy/renew-cert.sh --dry-run`; `crontab -l` musi zawierać istniejące zadanie odnawiania.
+## Kopie starej poczty
 
-## Przed migracją i zmianą MX
+- Cel: `D:\Backup\Dimundi-poczta\` (NTFS). Każda skrzynka przez jej własne konto SSH: `beata` lub `marcin`; hasła wpisywane w oknie, niezapisywane.
+- Skrypty: `poczta/archiwum/backup/backup-beata.ps1` i `backup-marcin.ps1`, parametr `-Python <python.exe>`. Zarchiwizowane pliki bez kosza przed kompresją: Marcin 10 026 449 858 B; Beata 1 357 198 215 B.
+- Format: `Maildir.tar.gz`, `SHA256SUMS.txt`, `report.json`. Pomijamy `.Trash` i `.Trash.*`; zachowujemy archiwum, wysłane i szkice. Strumieniowanie na komputer bez dodatkowego archiwum na VPS.
+- Wskaźnik: pobrane GB, MB/s i czas; później weryfikacja TAR, CRC gzip i SHA-256. `archive_verified` oznacza poprawne archiwum; `incomplete` — brak ukończonej kopii. Test odtworzenia to osobny krok.
+- Kopia aktywnej skrzynki nie jest atomowym snapshotem. Błąd/zmiana pliku zgłoszona przez tar oznacza nieukończoną próbę. Brak wznawiania; ponowienie tworzy nowy katalog. Kopie obejmują Maildir, nie konfigurację starego serwera.
+- **Beata: zakończona i zweryfikowana** — `Beata-20260920-222904/Maildir.tar.gz`, 3463 wiadomości, 930 620 852 B; niezależnie potwierdzono SHA-256.
+- **Marcin: zakończona i zweryfikowana** — `Marcin-20260920-223745/Maildir.tar.gz`, 20 751 wiadomości, 6 780 468 275 B. Raport `archive_verified`; niezależnie potwierdzono SHA-256. Kopia została również przeniesiona na nowy VPS i porównana ze źródłem.
+- Źródłowych wiadomości nie usuwamy. Przed przełączeniem MX potrzebna migracja, po przełączeniu końcowa synchronizacja.
 
-- Nadal stara poczta: nie przełączamy MX ani rekordu `mail` tymi skryptami.
-- DNS potwierdzony publicznie: PTR IPv4 → `poczta.dimundi.com`; SPF obu domen zawiera `145.239.92.71`; DKIM `dimundi2026` obu domen zgodny z kluczami pokazanymi przez skrypt; DMARC obu domen `v=DMARC1; p=none` (bez raportowania). Pozostają testy wysyłki/odbioru i blokady relay z Internetu.
-- Zweryfikować DNS używany przez antyspam/DNSBL; ewentualny własny resolver ustalić przed produkcją. Sprawdzić zużycie RAM z ClamAV i zapas dysku.
-- Przed migracją ustalić kopię poza VPS i sprawdzić odtwarzanie (dane poczty, konfiguracja kont/DKIM, SQLite, klucz Roundcube, certyfikaty). Nie wykonywać niespójnej kopii aktywnej bazy SQLite.
-- Wiadomości kopiujemy później, bez kosza, z końcową synchronizacją po przełączeniu. Hasło Beaty nadal do odzyskania.
-- Lokalnie sprawdzono start kontenerów, konto/alias, logowanie IMAP TLS i SMTP STARTTLS oraz logowanie przez Roundcube za proxy HTTPS i składnię DKIM obu domen. W lokalnej próbie DMS z ClamAV zużywał około 1,23 GiB RAM, Roundcube 35 MiB; to pomiar bez rzeczywistego obciążenia. Test SMTP/25 z lokalnej sieci przekroczył czas; test relay na VPS nadal wymagany. Nie wysłano żadnej wiadomości.
+## Migracja Beaty — kopia przeniesiona i zweryfikowana
 
-Źródła konfiguracji: [DMS](https://docker-mailserver.github.io/docker-mailserver/latest/), [Roundcube](https://github.com/roundcube/roundcubemail-docker).
+- Potwierdzono `COMPLETE` i raport `verified` na VPS: źródło 3463, cel przed migracją 0, po migracji 3463; brak brakujących wiadomości i różnic sprawdzanych metadanych. Foldery: INBOX 2474, Sent 979, Drafts 9, Archives.2021 1. Użytkownik potwierdził widoczność wiadomości w Roundcube.
 
-## Poprawka blokady Roundcube przez Fail2Ban
+- Lokalnie: `poczta/archiwum/migration/migrate-beata.ps1`; `t/n` przed wysyłką i synchronizacją, klucz z `deploy.config`. Źródło: konkretna zweryfikowana kopia Beaty z 2026-09-20, 3463 wiadomości.
+- VPS: `/home/docker/dimundi/poczta/migration/beata-20260920/`; archiwum sprawdzane SHA-256. Rozpakowanie do roboczego `/tmp/dimundi-migration-beata-20260920` w kontenerze; oryginalna kopia i stary serwer pozostają bez zmian.
+- Synchronizacja `doveadm sync -1 -R -u beata@dimundi.com`: pobiera z kopii roboczej, zachowuje wiadomości istniejące w nowej skrzynce. Przed nią zapisujemy kopię i inwentarz celu. Nie używamy nadpisującego `doveadm backup -R` ani zwykłego importu bez deduplikacji.
+- `verification.json` porównuje wszystkie wiadomości: folder, SHA-256 treści, datę i flagi; kontroluje zachowanie wcześniejszych wiadomości celu. `COMPLETE` powstaje po sukcesie. Nie traktuj samego przesłania archiwum jako zakończonej migracji.
+- Lokalny test na sztucznych danych: zgodność dat/flag/folderów, zachowanie wiadomości celu i brak duplikatów po ponowieniu. Kontrola VPS przed migracją: Dovecot 2.4.1, UID/GID 5000, ścieżka `/var/mail/dimundi.com/beata`, brak wiadomości, około 33 GB wolnego.
+- Logi i kopie robocze zostają na VPS; `/tmp` kontenera może zniknąć przy jego odtworzeniu. Końcowa synchronizacja najnowszych wiadomości ze starego serwera pozostaje do wykonania.
 
-- Przyczyna: Dovecot widzi wspólny IP Roundcube. Po sześciu błędnych logowaniach Fail2Ban zablokował webmail wszystkim; ręczne odblokowanie przywróciło logowanie.
-- `fail2ban-jail.cf` + `ignore-roundcube.sh`: wyjątek tylko dla IP aktualnie rozwiązanego z prywatnego aliasu `dimundi-roundcube`. Bez stałego IP i bez wykluczania całej sieci. Fail2Ban nadal chroni bezpośrednie połączenia IMAP/SMTP.
-- Nginx: POST do webmaila maks. 30/min na rzeczywisty adres klienta, z buforem 15 żądań; nadmiar otrzymuje HTTP 429. Limit obejmuje wszystkie POST (także operacje po zalogowaniu), bo dane logowania mogą być w treści żądania. GET i pliki strony nie są limitowane. Użytkownicy za jednym publicznym IP dzielą limit; nagłówki klienta nie zmieniają klucza limitu.
-- Wdrożenie: lokalnie `.\poczta\deploy\install.bat` (`t`), następnie na VPS jako `docker`:
+Źródło doboru trybu: [Dovecot — migracja skrzynek](https://doc.dovecot.org/2.3/admin_manual/migrating_mailboxes/).
 
-```sh
-cd /home/docker/dimundi/poczta/deploy
-bash update-webmail.sh
-```
+## Migracja Marcina — kopia przeniesiona i zweryfikowana
 
-- Potwierdź `t`. Skrypt najpierw sprawdza i przeładowuje proxy z limitem, potem odtwarza kontenery poczty i usuwa wcześniejsze blokady aktualnego IP Roundcube. Krótka przerwa w poczcie; bez zmiany haseł, certyfikatów i MX. Nie uruchamiaj ponownie `accounts.sh` ani `setup-tls.sh` dla tej poprawki.
+- 2026-09-21 potwierdzono `COMPLETE` i raport `verified`: źródło 20 751, cel przed migracją 3, po migracji 20 754. Brak brakujących wiadomości i różnic sprawdzanych metadanych; trzy wcześniejsze wiadomości zachowane. Użytkownik potwierdził widoczność poczty.
+
+- Lokalnie: `poczta/archiwum/migration/migrate-marcin.ps1`; kopia `Marcin-20260920-223745`, 20 751 wiadomości, weryfikacja ustalonego SHA-256. Osobne `t/n` przed wysłaniem i synchronizacją.
+- Kontrola przed wysłaniem: konto, stan usług i minimum 31 GB wolnego na VPS (archiwum 6,78 GB + źródło i cel po około 10 GB + zapas). Brak miejsca zatrzymuje procedurę bez automatycznego usuwania danych.
+- VPS: `/home/docker/dimundi/poczta/migration/marcin-20260920/`; kopia robocza w kontenerze `/tmp/dimundi-migration-marcin-20260920`. Metoda i weryfikacja jak u Beaty; raport w `verification.json`. MX i stary serwer bez zmian.

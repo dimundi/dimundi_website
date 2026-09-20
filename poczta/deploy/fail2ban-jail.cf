@@ -1,3 +1,23 @@
 [DEFAULT]
 # Check Docker DNS at each failure; do not whitelist a subnet or a stale IP.
 ignorecommand = /bin/bash /usr/local/bin/ignore-roundcube.sh <ip>
+
+[postfix]
+maxretry = 6
+findtime = 10m
+bantime = 15m
+bantime.increment = true
+bantime.factor = 1
+bantime.maxtime = 24h
+bantime.rndtime = 0
+bantime.overalljails = false
+
+[dovecot]
+maxretry = 6
+findtime = 10m
+bantime = 15m
+bantime.increment = true
+bantime.factor = 1
+bantime.maxtime = 24h
+bantime.rndtime = 0
+bantime.overalljails = false
