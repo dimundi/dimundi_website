@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="Explore Dimundi services." />
+  <title>Dimundi | Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+
+  <main id="main-screen-container" class="screen">
+    <section id="terminal-container" class="terminal" aria-labelledby="intro-title">
+      <h1 id="intro-title" class="line page-title">
+        <!--# include virtual="/partials/home-link.html" -->
+        <span class="page-title-text"><span class="typed">Solutions We Build</span><span class="cursor" id="cursor">&#9608;</span></span>
+      </h1>
+      <p class="page-subtitle">In alphabetical order</p>
+
+      <nav class="menu" id="menu" aria-label="Main navigation">
+        <ul class="menu-list">
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="algorithm-implementation-description" data-description-target="algorithm-implementation-description">Algorithm Implementation</button>
+            <article class="service-description" id="algorithm-implementation-description" aria-hidden="true">
+              <p>We implement advanced algorithms and computational models from Mathcad or MATLAB as dedicated software solutions, using technologies such as C++, C#, Python, and Java.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="automotive-description" data-description-target="automotive-description">Automotive</button>
+            <article class="service-description" id="automotive-description" aria-hidden="true">
+              <p>We have experience integrating software systems with vehicle diagnostic networks, including manufacturer-specific protocols and standardized OBD-II/EOBD interfaces.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="boardgames-description" data-description-target="boardgames-description">Boardgames</button>
+            <article class="service-description" id="boardgames-description" aria-hidden="true">
+              <p>Yes, we make board games too! It’s a side venture — after all, there’s more to life than software. We create them under our own brand, <a href="https://whatthefrog.pl">WhatTheFrog</a>.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="digital-signage-description" data-description-target="digital-signage-description">Digital Signage</button>
+            <article class="service-description" id="digital-signage-description" aria-hidden="true">
+              <p>We design and deploy comprehensive digital signage solutions for managing content across screens, monitors, and multimedia devices.
+                Our solutions include client applications running on multiple operating systems, cloud-based content management,
+                and user interfaces for managing content and devices.</p>
+              <p>Drawing on this experience, we developed <strong>Redi</strong>, our own platform for managing digital signage networks.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="education-description" data-description-target="education-description">Education</button>
+            <article class="service-description" id="education-description" aria-hidden="true">
+              <p>Many of our projects are focused on education. We develop applications and systems that support learning, teaching, and the day-to-day running of educational institutions. We combine technology with the practical needs of students and educators, turning ideas into useful tools.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="end-to-end-data-solutions-description" data-description-target="end-to-end-data-solutions-description">End-to-End Data Solutions</button>
+            <article class="service-description" id="end-to-end-data-solutions-description"  aria-hidden="true">
+              <p>We design and implement complete data solutions, from data collection and integration to storage, processing, analysis, and reporting.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="full-stack-development-description" data-description-target="full-stack-development-description">Full-Stack Development</button>
+            <article class="service-description" id="full-stack-development-description" aria-hidden="true">
+              <p>We develop complete software solutions covering both frontend and backend, including user interfaces, APIs, databases, integrations, and deployment.</p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="idea-to-product-description" data-description-target="idea-to-product-description">Idea to Product</button>
+            <article class="service-description" id="idea-to-product-description"  aria-hidden="true">
+              <h2>Have an idea for an app, website, or digital tool?</h2>
+                          <p>
+              We can help you define it, design it, and build a solution that fits your goals.
+            </p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="mobile-application-description" data-description-target="mobile-application-description">Mobile Application</button>
+            <article class="service-description" id="mobile-application-description" aria-hidden="true">
+              <p>We design and develop custom mobile applications for Android and iOS, tailored to your business needs — from simple internal tools to advanced systems integrated with databases, APIs, and external services.</p>
+            </article>
+          </li>
+          <li><a class="menu-item typed-item menu-navigation" href="contact.html">Contact</a></li>
+          <li><a class="menu-item typed-item menu-navigation" href="index.html">Home</a></li>
+        </ul>
+      </nav>
+
+    </section>
+  </main>
+
+
+  <!--# include virtual="/partials/footer.html" -->
+
+  <script src="script.js" defer></script>
+  <script src="menu.js" defer></script>
+</body>
+</html>

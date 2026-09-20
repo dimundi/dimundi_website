@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="Dimundi, creative IT." />
+  <title>Dimundi | Creative IT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch color theme" aria-pressed="false">
+    <span class="theme-toggle__track" aria-hidden="true">
+      <span class="theme-toggle__thumb"></span>
+    </span>
+  </button>
+
+  <main id="main-screen-container" class="screen">
+    <section id="terminal-container" class="terminal" aria-labelledby="intro-title">
+      <h1 id="intro-title" class="line">
+        <span class="typed">Dimundi, creative IT.</span><span class="cursor" id="cursor">&#9608;</span>
+      </h1>
+
+      <nav class="menu" id="menu" aria-label="Main navigation">
+        <ul class="menu-list">
+          <li><a class="menu-item typed-item" href="about.html">About Us</a></li>
+          <li><a class="menu-item typed-item" href="services.html">Services</a></li>
+          <li><a class="menu-item typed-item" href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+
+    </section>
+  </main>
+
+  <!--# include virtual="/partials/footer.html" -->
+
+  <script src="script.js" defer></script>
+  <script src="menu.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="description" content="Meet Dimundi, a Polish software company building custom applications, integrating software with hardware, and training AI models." />
+  <title>Dimundi | About</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+
+  <main id="main-screen-container" class="screen">
+    <section id="terminal-container" class="terminal" aria-labelledby="intro-title">
+      <h1 id="intro-title" class="line page-title">
+        <!--# include virtual="/partials/home-link.html" -->
+        <span class="page-title-text"><span class="typed">cd about</span><span class="cursor" id="cursor">&#9608;</span></span>
+      </h1>
+
+      <nav class="menu" id="menu" aria-label="Main navigation">
+        <ul class="menu-list">
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="who-are-we-description" data-description-target="who-are-we-description">who-are-we.txt</button>
+            <article class="service-description" id="who-are-we-description" aria-hidden="true">
+              <p>
+                We are a Polish software company drawn to ambitious projects and complex technical challenges.
+                We particularly enjoy projects that bring software and hardware together.
+              </p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="what-we-do-description" data-description-target="what-we-do-description">what-we-do.txt</button>
+            <article class="service-description" id="what-we-do-description" aria-hidden="true">
+              <p>
+                We build custom software and applications tailored to your needs.
+                We can integrate them with other systems, devices, and automation systems to support the way you work.
+                <br>
+                We combine modern software engineering with AI model training to build intelligent applications for real-world challenges.<br>
+                <a href="services.html">Explore our services.</a>
+              </p>
+            </article>
+          </li>
+          <li>
+            <button class="menu-item typed-item" type="button" aria-expanded="false" aria-controls="how-we-work-description" data-description-target="how-we-work-description">how-we-work.txt</button>
+            <article class="service-description" id="how-we-work-description" aria-hidden="true">
+            <p>
+              Every client has unique needs, so we treat every project individually.
+              <br>
+              We start by understanding your business goals, then design and build
+              systems that support them.
+              <br>
+              Clear communication and close cooperation with the client remain our priority
+              throughout the whole process.
+            </p>
+            </article>
+          </li>
+          <li><a class="menu-item typed-item" href="services.html">cd ../Services</a></li>
+          <li><a class="menu-item typed-item" href="contact.html">cd ../Contact</a></li>
+          <li><a class="menu-item typed-item" href="index.html">cd ..</a></li>
+        </ul>
+      </nav>
+      
+    </section>
+  </main>
+
+
+  <!--# include virtual="/partials/footer.html" -->
+
+  <script src="script.js" defer></script>
+  <script src="menu.js" defer></script>
+</body>
+</html>

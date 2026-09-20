@@ -1,0 +1,16 @@
+# Keep text files consistent across platforms.
+* text=auto eol=lf
+
+# Windows batch scripts use CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Preserve binary assets as-is.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
