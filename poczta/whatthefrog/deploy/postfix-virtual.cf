@@ -1,0 +1,6 @@
+# Explicit local delivery must precede the catch-all.
+marcin@whatthefrog.pl marcin@whatthefrog.pl
+biuro@whatthefrog.pl marcin@whatthefrog.pl
+postmaster@whatthefrog.pl marcin@whatthefrog.pl
+abuse@whatthefrog.pl marcin@whatthefrog.pl
+@whatthefrog.pl marcin@whatthefrog.pl

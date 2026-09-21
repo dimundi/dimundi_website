@@ -5,6 +5,10 @@ backend/.env
 /deploy.config
 /poczta/data/
 /poczta/secrets/
+/poczta/dimundi/data/
+/poczta/dimundi/secrets/
+/poczta/whatthefrog/data/
+/poczta/whatthefrog/secrets/
 /proxy/deploy_proxy/mail-conf/
 /proxy/deploy_proxy/letsencrypt/
 /proxy/deploy_proxy/acme/

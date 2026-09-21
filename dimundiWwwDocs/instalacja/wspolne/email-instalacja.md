@@ -1,6 +1,8 @@
 # Poczta — instalacja od zera
 
-Krótka kolejność ponownego postawienia naszego środowiska, **nie procedura odtwarzania backupu**. Konfiguracja i bieżący stan: [email.md](email.md). Polecenia `.bat` uruchamiamy lokalnie, `.sh` na VPS jako `docker`. Potwierdzenia: `t/n`; po błędzie nie przechodzimy dalej.
+Wspólne środowisko pocztowe na VPS. Procedura powstała przy instalacji Dimundi; wymienione konta, domeny i skrypty dotyczą Dimundi. Ustalenia dla kolejnej domeny: [WhatTheFrog](../whatthefrog/email.md).
+
+Krótka kolejność ponownego postawienia naszego środowiska, **nie procedura odtwarzania backupu**. Konfiguracja i bieżący stan: [email.md](../dimundi/email.md). Polecenia `.bat` uruchamiamy lokalnie, `.sh` na VPS jako `docker`. Potwierdzenia: `t/n`; po błędzie nie przechodzimy dalej.
 
 ## 1. Przygotuj VPS i lokalną konfigurację
 
@@ -8,7 +10,7 @@ Krótka kolejność ponownego postawienia naszego środowiska, **nie procedura o
 - Zainstaluj Docker Engine, Compose i `cron`. Sprawdź `sudo docker run --rm hello-world` oraz `docker compose version`.
 - Przygotuj użytkownika `docker`, dostęp SSH kluczem i uprawnienia do Dockera. Utwórz `/home/docker/dimundi`. Zachowaj dostęp administracyjny przez `debian`.
 - Lokalnie przygotuj `deploy.config` według `deploy.config_tmp` (`SSH_KEY`). Repo i skrypty są na komputerze; pliki przesyłamy SSH/SCP.
-- Skrypty zakładają IP `145.239.92.71`, domeny Dimundi i ścieżki `/home/docker/dimundi`. Przy innym VPS dostosuj adresy w instalatorach i bindy portów `poczta/deploy/compose.yml` **przed wysyłką**.
+- Skrypty zakładają IP `145.239.92.71`, domeny Dimundi i ścieżki `/home/docker/dimundi`. Przy innym VPS dostosuj adresy w instalatorach i bindy portów `poczta/dimundi/deploy/compose.yml` **przed wysyłką**.
 
 ## 2. Przygotuj DNS i proxy
 
@@ -40,7 +42,7 @@ Na całkiem nowym VPS dokończ także uruchomienie strony i jej HTTPS według `d
 Lokalnie:
 
 ```powershell
-.\poczta\deploy\install.bat
+.\poczta\dimundi\deploy\install.bat
 ```
 
 Odpowiedz `t`. Na VPS:
@@ -98,12 +100,12 @@ Potwierdź instalację zadania `t`. Sprawdź wpis na 03:17 i 15:17 oraz poprawn�
 
 ## 7. Sprawdź działanie przed przełączeniem
 
-Nowa instalacja pobiera progi Fail2Ban z `poczta/deploy/fail2ban-jail.cf`: SMTP/IMAP 6 błędów / 10 min, blokady od 15 min z podwajaniem do 24 h. Dla istniejącego wdrożenia wystarczy przesłać ten plik i przeładować Fail2Ban — bez nowego skryptu wdrożeniowego i bez restartu kontenerów.
+Nowa instalacja pobiera progi Fail2Ban z `poczta/dimundi/deploy/fail2ban-jail.cf`: SMTP/IMAP 6 błędów / 10 min, blokady od 15 min z podwajaniem do 24 h. Dla istniejącego wdrożenia wystarczy przesłać ten plik i przeładować Fail2Ban — bez nowego skryptu wdrożeniowego i bez restartu kontenerów.
 
 Lokalnie, PowerShell w katalogu repo (klucz z `deploy.config`):
 
 ```powershell
-scp -i ((Select-String -Path .\deploy.config -Pattern '^SSH_KEY=').Line -replace '^SSH_KEY=', '') .\poczta\deploy\fail2ban-jail.cf docker@145.239.92.71:/home/docker/dimundi/poczta/deploy/fail2ban-jail.cf
+scp -i ((Select-String -Path .\deploy.config -Pattern '^SSH_KEY=').Line -replace '^SSH_KEY=', '') .\poczta\dimundi\deploy\fail2ban-jail.cf docker@145.239.92.71:/home/docker/dimundi/poczta/deploy/fail2ban-jail.cf
 ```
 
 Na VPS jako `docker`, po poprawnym przesłaniu:
@@ -130,11 +132,11 @@ docker compose logs --tail=100 mailserver roundcube
 
 ### Dodatkowe konto biuro, formularz i catch-all
 
-Po utworzeniu podstawowych kont uruchom `bash add-account.sh` dla `biuro`, z aliasem `.pl`. Docelowe przekierowania zapisano w `poczta/deploy/postfix-virtual.cf`: biuro i nieznane adresy obu domen do Marcina, bez kopii w biurze. Po wysłaniu przez `install.bat` porównaj plik z `../data/config/postfix-virtual.cf`; zachowaj dodatkowe aliasy i kopię starego pliku przed zastosowaniem zmian. Jawne mapowania Beaty i Marcina na siebie są konieczne przed catch-all. Konta tworzone później aktualnym `add-account.sh` dostają taki wyjątek automatycznie. Nie uruchamiaj ponownie tworzenia istniejących kont.
+Po utworzeniu podstawowych kont uruchom `bash add-account.sh` dla `biuro`, z aliasem `.pl`. Docelowe przekierowania zapisano w `poczta/dimundi/deploy/postfix-virtual.cf`: biuro i nieznane adresy obu domen do Marcina, bez kopii w biurze. Po wysłaniu przez `install.bat` porównaj plik z `../data/config/postfix-virtual.cf`; zachowaj dodatkowe aliasy i kopię starego pliku przed zastosowaniem zmian. Jawne mapowania Beaty i Marcina na siebie są konieczne przed catch-all. Konta tworzone później aktualnym `add-account.sh` dostają taki wyjątek automatycznie. Nie uruchamiaj ponownie tworzenia istniejących kont.
 
-Formularz: ustaw wartości ze wzoru `backend/.env_tmpl` w produkcyjnym `app/backend/.env`, z prawdziwym hasłem biura i dotychczasowym telefonem. W `app/deploy` uruchom `docker compose up -d --no-deps --force-recreate backend`. Sprawdź formularz, przekierowania, dostarczanie do Beaty i brak kopii w biurze. Status wdrożenia zapisujemy w [email.md](email.md).
+Formularz: ustaw wartości ze wzoru `backend/.env_tmpl` w produkcyjnym `app/backend/.env`, z prawdziwym hasłem biura i dotychczasowym telefonem. W `app/deploy` uruchom `docker compose up -d --no-deps --force-recreate backend`. Sprawdź formularz, przekierowania, dostarczanie do Beaty i brak kopii w biurze. Status wdrożenia zapisujemy w [email.md](../dimundi/email.md).
 
-Migracja z 20–21 września 2026 r. jest zakończona. Przebieg i wyniki: [log_migracji.md](log_migracji.md). Poniżej kolejność czynności przy kolejnej migracji; skrypty archiwalne wymagają dostosowania do nowych kopii.
+Migracja z 20–21 września 2026 r. jest zakończona. Przebieg i wyniki: [log_migracji.md](../dimundi/log_migracji.md). Poniżej kolejność czynności przy kolejnej migracji; skrypty archiwalne wymagają dostosowania do nowych kopii.
 
 1. Zrób i zweryfikuj kopie starej poczty poza VPS: skrypty `poczta/archiwum/backup/backup-beata.ps1` i `backup-marcin.ps1`, parametr `-Python <python.exe>`; docelowo `D:\Backup\Dimundi-poczta`. Każda skrzynka własnym kontem SSH, bez kosza.
 2. Skopiuj wiadomości na nowy serwer, sprawdź foldery, liczby wiadomości i próbki załączników. Nie usuwaj źródła. Lokalne archiwa Maildir to kopie zabezpieczające, nie wykonana migracja do DMS.

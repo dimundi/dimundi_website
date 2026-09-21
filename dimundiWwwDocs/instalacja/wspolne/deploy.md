@@ -4,6 +4,9 @@ Tutaj zapisujemy ustalenia i uwagi dotyczące wdrożenia projektu. Uzupełniamy 
 
 ## Ustalenia
 
+- WhatTheFrog: osobny projekt Compose i dane poczty na tym samym VPS, Additional IP `51.68.128.220`; przypisanie IP, PTR i zastosowanie Netplana na `ens3` potwierdzone przez użytkownika. Repo `poczta/whatthefrog/deploy/`, cel `/home/docker/dimundi/whatthefrog/deploy`. 2026-09-21: wykonano TLS i tworzenie kont, oba kontenery działają, DMS healthy. Tymczasowo bez ClamAV do upgrade RAM; IP wyjściowe i działanie poczty do sprawdzenia, migracja nierozpoczęta. Szczegóły: [WhatTheFrog](../whatthefrog/email.md).
+- Dimundi: pliki przeniesiono w repo do `poczta/dimundi/deploy/`; instalator nadal wysyła do `/home/docker/dimundi/poczta/deploy` na VPS. Wspólne proxy i odnowienia certyfikatów pozostają w dotychczasowym miejscu.
+
 - Planowanym środowiskiem wdrożenia jest serwer OVH z Dockerem.
 - Na serwerze produkcyjnym pliki strony mają znajdować się w katalogu hosta podłączonym do kontenera Nginx przez bind mount.
 - Zachować ten sposób udostępniania frontendu również w konfiguracji produkcyjnej. Nie zastępować go kopiowaniem strony do obrazu jako jedynym sposobem wdrożenia.

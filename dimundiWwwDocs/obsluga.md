@@ -15,7 +15,7 @@
 Na komputerze, w PowerShell w głównym katalogu projektu:
 
 ```powershell
-.\poczta\deploy\install.bat
+.\poczta\dimundi\deploy\install.bat
 ```
 
 Potwierdź `t`. Skrypt korzysta z `SSH_KEY` w lokalnym `deploy.config` i wysyła skrypty **oraz konfigurację poczty** do `/home/docker/dimundi/poczta/deploy`, nadpisując odpowiadające im pliki. Nie uruchamia ani nie restartuje kontenerów. Przesłany skrypt uruchom później przez SSH, np. `bash add-account.sh`.
@@ -84,4 +84,4 @@ docker compose exec mailserver fail2ban-client set postfix unbanip ADRES_IP
 
 Certyfikaty odnawiają się automatycznie. Pełna kopia nowego środowiska i test odtwarzania pozostają do wykonania według ostatniego zapisanego stanu.
 
-[Ustawienia programów pocztowych](programy-pocztowe.md) · [Konfiguracja techniczna](instalacja/email.md) · [Instalacja](instalacja/email-instalacja.md) · [Log migracji](instalacja/log_migracji.md)
+[Ustawienia programów pocztowych](programy-pocztowe.md) · [Konfiguracja techniczna](instalacja/dimundi/email.md) · [Instalacja](instalacja/wspolne/email-instalacja.md) · [Log migracji](instalacja/dimundi/log_migracji.md)
