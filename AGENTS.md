@@ -11,9 +11,9 @@ Ten plik zawiera uzgodnienia dotyczące pracy nad projektem. Uzupełniamy go w m
 
 ## Produkcja
 
-- Przed pracami dotyczącymi wdrożenia, infrastruktury lub konfiguracji produkcyjnej przeczytaj [dimundiWwwDocs/deploy.md](dimundiWwwDocs/deploy.md) i stosuj zapisane tam ustalenia.
-- Nowe uzgodnienia i uwagi dotyczące deploya zapisuj w `dimundiWwwDocs/deploy.md`.
+- Przed pracami dotyczącymi wdrożenia, infrastruktury lub konfiguracji produkcyjnej przeczytaj [dimundiWwwDocs/instalacja/deploy.md](dimundiWwwDocs/instalacja/deploy.md) i stosuj zapisane tam ustalenia.
+- Nowe uzgodnienia i uwagi dotyczące deploya zapisuj w `dimundiWwwDocs/instalacja/deploy.md`.
 - Dokumentacja jest vaultem Obsidiana w `dimundiWwwDocs/`; katalogi `.obsidian/` wykluczamy z Gita.
-- Dokumentację poczty uzupełniaj na bieżąco podczas wdrażania w [dimundiWwwDocs/email.md](dimundiWwwDocs/email.md). Pisz bardzo skrótowo: moduły, konfiguracja i stan wdrożenia, bez rozbudowanych opisów i sekretów.
-- Kolejność instalacji poczty od zera zapisuj w [dimundiWwwDocs/email-instalacja.md](dimundiWwwDocs/email-instalacja.md); utrzymuj ją zgodną ze skryptami i odróżniaj wykonane etapy od planowanej migracji.
+- Dokumentację poczty uzupełniaj na bieżąco podczas wdrażania w [dimundiWwwDocs/instalacja/email.md](dimundiWwwDocs/instalacja/email.md). Pisz bardzo skrótowo: moduły, konfiguracja i stan wdrożenia, bez rozbudowanych opisów i sekretów.
+- Kolejność instalacji poczty od zera zapisuj w [dimundiWwwDocs/instalacja/email-instalacja.md](dimundiWwwDocs/instalacja/email-instalacja.md); utrzymuj ją zgodną ze skryptami i odróżniaj wykonane etapy od planowanej migracji.
 - Przy drobnych zmianach administracyjnych popraw konfigurację i dokumentację w repo, a użytkownikowi podaj polecenia do ręcznego wykonania. Nie twórz nowych skryptów wdrożeniowych do każdej takiej zmiany.
