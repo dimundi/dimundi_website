@@ -41,6 +41,8 @@ Dodawanie kolejnej skrzynki: na VPS jako `docker` uruchom `cd ~/dimundi/poczta/d
 
 ## Certyfikaty i ochrona webmaila
 
+- Roundcube: w repo włączono wtyczkę `password` przez `ROUNDCUBEMAIL_PLUGINS`. Wdrożenie: wysłać konfigurację i odtworzyć wyłącznie `roundcube`. Integracja zmiany hasła z DMS pozostaje do skonfigurowania; samo włączenie wtyczki nie zapewnia zmiany hasła. Wdrożenie na VPS niepotwierdzone.
+
 - Fail2Ban: w repo przygotowano i lokalnie sprawdzono dla `postfix` i `dovecot` 6 błędów / 10 minut → 15 minut blokady, `bantime.increment=true`, podwajanie (`factor=1`) do maks. 24 godzin. Historia osobna dla każdego jaila; wcześniejsze blokady zapisane w bazie mogą wpłynąć na kolejną karę. Wyjątek Roundcube zachowany, `custom` bez zmian (180 dni).
 - Wdrożenie nowych czasów na VPS jeszcze niepotwierdzone. Ostatni odczyt przed zmianą: 6 błędów / 7 dni → 7 dni blokady. Zmiana pliku i reload nie oznaczają automatycznego usunięcia istniejących banów.
 - Cron użytkownika `docker`: odnowienia o **03:17 i 15:17** czasu VPS, skrypt `proxy/renew-cert.sh`, log `proxy/renew-cert.log`.
