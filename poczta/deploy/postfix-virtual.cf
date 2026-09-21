@@ -1,0 +1,15 @@
+# Desired routing for the current accounts. Apply manually to data/config/
+# after comparing with the existing file; preserve any additional aliases.
+# Every real mailbox needs an explicit mapping before catch-all entries.
+marcin@dimundi.com marcin@dimundi.com
+beata@dimundi.com beata@dimundi.com
+biuro@dimundi.com marcin@dimundi.com
+marcin@dimundi.pl marcin@dimundi.com
+beata@dimundi.pl beata@dimundi.com
+biuro@dimundi.pl marcin@dimundi.com
+postmaster@dimundi.com marcin@dimundi.com
+abuse@dimundi.com marcin@dimundi.com
+postmaster@dimundi.pl marcin@dimundi.com
+abuse@dimundi.pl marcin@dimundi.com
+@dimundi.com marcin@dimundi.com
+@dimundi.pl marcin@dimundi.com

@@ -43,6 +43,22 @@ confirm "Utworzyc konto $account?" || exit 0
 echo 'Wpisz haslo w ukrytym monicie. Nie podajemy go jako argumentu polecenia.'
 dc exec mailserver setup email add "$account"
 echo "Utworzono konto: $account"
+# A catch-all takes precedence over mailbox lookup. Preserve local delivery
+# for the new account with an explicit self-mapping (setup alias rejects it).
+if ! dc exec -T mailserver python3 - "$account" <<'PY'
+import pathlib, sys
+account = sys.argv[1]
+path = pathlib.Path('/tmp/docker-mailserver/postfix-virtual.cf')
+text = path.read_text() if path.exists() else ''
+keys = {line.split()[0].lower() for line in text.splitlines()
+        if line.strip() and not line.lstrip().startswith('#')}
+if '@' + account.split('@', 1)[1] in keys and account not in keys:
+    path.write_text(account + ' ' + account + '\n' + text)
+PY
+then
+    echo "Konto istnieje, ale nie dodano wyjatku catch-all. Przed uzyciem dodaj w postfix-virtual.cf: $account $account"
+    exit 1
+fi
 if [[ "$add_alias" == true ]]; then
     if ! dc exec mailserver setup alias add "$alias_address" "$account"; then
         echo "Konto $account istnieje, ale alias nie zostal dodany. Nie tworz konta ponownie."

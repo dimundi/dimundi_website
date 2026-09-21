@@ -32,8 +32,23 @@
         </div>
       </div>
 
-      <form class="terminal-form" id="contact-form" novalidate hidden>
-        <div class="question-list" id="question-list" aria-live="polite"></div>
+      <form class="terminal-form" id="contact-form" novalidate>
+        <fieldset class="contact-fields" id="contact-fields">
+          <legend>Send us a message</legend>
+          <div class="contact-field">
+            <label for="contact-name">Name</label>
+            <input id="contact-name" name="name" type="text" autocomplete="name" maxlength="80" required />
+          </div>
+          <div class="contact-field">
+            <label for="contact-email">Your Email</label>
+            <input id="contact-email" name="email" type="email" autocomplete="email" maxlength="254" required />
+          </div>
+          <div class="contact-field contact-field-message">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" name="message" rows="6" maxlength="2000" required></textarea>
+          </div>
+          <button class="contact-submit" type="submit">Send message</button>
+        </fieldset>
         <p class="form-status" id="form-status" role="status"></p>
       </form>
       

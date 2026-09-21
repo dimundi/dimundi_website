@@ -397,105 +397,112 @@ a {
 }
 
 .terminal-form {
-  width: min(62rem, 100%);
-  margin-top: clamp(2rem, 5vw, 3rem);
-  color: var(--line-soft);
-  font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.4vw, 2.15rem);
-}
-
-.terminal-form[hidden] {
-  display: none;
-}
-
-.question-list {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.question-row {
-  display: grid;
-  gap: 0.3rem;
-  min-height: 2.05em;
-  color: var(--input-terminal-inactive);
-}
-
-.question-row.is-active {
-  color: var(--input-terminal-active);
-}
-
-.question-line,
-.answer-line {
-  min-height: 1em;
-  margin: 0;
-}
-
-.question-row.is-active .question-prompt::before,
-.question-row.is-revealed .question-prompt::before {
-  content: 'dimundi@contact: ';
-  color: var(--line-soft);
-}
-
-.answer-line {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: nowrap;
-  max-width: 100%;
-  color: var(--input-terminal-inactive);
-}
-
-.question-row.is-active .answer-line::before,
-.question-row.has-answer .answer-line::before {
-  content: 'visitor: ';
-  flex: 0 0 auto;
-  margin-right: 0.14em;
-  text-shadow: 0 0 6px var(--glow);
+  width: min(48rem, 100%);
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
   color: var(--line);
+  font-family: var(--font-mono);
 }
 
-.answer-text {
-  flex: 1 1 0;
+.contact-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
   min-width: 0;
-  max-width: 100%;
-  min-height: 1em;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 1rem;
 }
 
-.terminal-input {
-  flex: 1 1 0;
-  display: block;
+.contact-fields legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.contact-field {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.contact-field label {
+  color: var(--line);
+  font-weight: 500;
+}
+
+.contact-field-message {
+  grid-column: 1 / -1;
+}
+
+.contact-field input,
+.contact-field textarea {
   width: 100%;
   min-width: 0;
-  max-width: 100%;
-  min-height: 1em;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  outline: none;
-  overflow: hidden;
-  resize: none;
-  background: transparent;
-  color: var(--input-terminal-active);
-  caret-color: var(--glow);
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--line);
   font: inherit;
-  line-height: 1;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  line-height: 1.5;
 }
 
-.terminal-input:focus-visible {
-  box-shadow: none;
+.contact-field textarea {
+  min-height: 10rem;
+  resize: vertical;
+}
+
+.contact-field input:focus-visible,
+.contact-field textarea:focus-visible,
+.contact-submit:focus-visible {
+  outline: 2px solid var(--heading);
+  outline-offset: 3px;
+}
+
+.contact-submit {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-height: 44px;
+  padding: 0.75rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--active);
+  color: var(--line);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.contact-submit:hover:not(:disabled) {
+  box-shadow: 0 0 10px var(--glow);
+}
+
+.contact-fields:disabled {
+  opacity: 0.65;
+}
+
+.contact-submit:disabled {
+  cursor: wait;
+}
+
+@media (max-width: 560px) {
+  .contact-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact-submit {
+    width: 100%;
+  }
 }
 
 .form-status {
   min-height: 1.5em;
   margin: 0.75rem 0 0;
-  color: var(--muted);
-  bottom: 0;
+  color: var(--line);
+  font-size: 1rem;
 }
 
 .form-status.is-error {
