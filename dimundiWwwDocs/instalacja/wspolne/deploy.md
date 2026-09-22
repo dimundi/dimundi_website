@@ -130,6 +130,12 @@ docker compose -f compose.yml logs --tail=100 proxy
 
 ### Kolejne aktualizacje
 
+- Adresy podstron bez rozszerzeń: `/about`, `/solutions`, `/contact`; pliki pozostają `.html` (adres `/solutions` obsługuje `services.html`). `/services`, `/services/` i `/services.html` przekierowują 301 bezpośrednio na `/solutions`. Stare adresy `.html`, warianty z końcowym `/` i `/index.html` przekierowują 301 z zachowaniem parametrów. Linki, canonical i sitemap używają nowych adresów. Przekierowania względne zachowują HTTPS i port lokalnego proxy. Po wysłaniu plików sprawdź i przeładuj Nginx frontendu jak dla konfiguracji 404 poniżej.
+
+- Własna strona 404: `frontend/404.html`, SSI i `error_page 404 /404.html` w obu konfiguracjach frontendu. Zachowuje HTTP 404; nie dodajemy jej do sitemap. Przygotowana lokalnie, wymaga wysłania plików i przeładowania Nginx.
+- Po wysłaniu konfiguracji 404 wykonaj na VPS z `/home/docker/dimundi/app/deploy`: `docker compose -f compose.yml exec -T frontend nginx -t` i dopiero po sukcesie `docker compose -f compose.yml exec -T frontend nginx -s reload`. Sprawdź `curl -i https://dimundi.com/test/brak-strony`: HTTP 404 i własny HTML.
+- Instalator nie usuwa starych plików: po usunięciu Projects z repo usuń także `/home/docker/dimundi/app/frontend/projects.html` i `/home/docker/dimundi/app/frontend/wgs.jpg` na VPS (`rm -f --` z tymi dwoma pełnymi ścieżkami).
+
 - Tylko treść strony: uruchom lokalnie `deploy/install.bat`; zaakceptuj wysłanie plików i pomiń `.env`, jeśli nie zmieniasz danych. Zmiany frontendu są widoczne bez budowania i restartu.
 - Backend, Compose, obraz lub konfiguracja Nginx frontendu: po wysłaniu plików uruchom na VPS `bash build.sh` z katalogu aplikacji jak powyżej.
 - Dane w `backend/.env`: zaakceptuj ich wysłanie i uruchom `bash build.sh`, aby kontener wczytał nowe środowisko.
