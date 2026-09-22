@@ -92,6 +92,7 @@ form.addEventListener('submit', async (event) => {
       signal: AbortSignal.timeout(45000),
     });
     if (!response.ok) throw new Error('Message was not sent');
+    window.dimundiTrack?.('generate_lead');
     form.reset();
     setStatus('Thank you. We will contact you soon.', 'is-success');
   } catch {

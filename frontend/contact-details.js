@@ -63,6 +63,7 @@
               link.href = kind === 'email' ? `mailto:${value}` : `tel:${value.replace(/[^+\d]/g, '')}`;
               link.hidden = false;
               button.hidden = true;
+              window.dimundiTrack?.('contact_reveal', { kind });
               finish();
               link.focus();
             } catch {

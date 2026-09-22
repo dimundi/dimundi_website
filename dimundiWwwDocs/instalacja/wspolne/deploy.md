@@ -138,7 +138,7 @@ docker compose -f compose.yml logs --tail=100 proxy
 
 ### Kolejne aktualizacje
 
-- Snake: `/snake` otwierane z About w nowej karcie, `frontend/snake.html` i cała gra z animacją startową w `frontend/snake.js`. Strona ma `noindex`, bez wpisu w sitemap. Nowa trasa w `frontend/nginx.conf` i `deploy/nginx.conf`; po wysłaniu przez `deploy/install.bat` sprawdź `nginx -t` i wykonaj `nginx -s reload` w kontenerze frontendu (polecenia poniżej). Bez przebudowy obrazów. Zmiana przygotowana i sprawdzana lokalnie, bez wdrożenia na VPS.
+- Snake: `/snake` otwierane z About w nowej karcie, `frontend/snake.html` i cała gra z animacją startową w `frontend/snake.js`. Decyzja użytkownika 2026-09-23: gra jest celową częścią witryny i ma być indeksowana; usunięto `noindex`, dodano canonical i wpis w sitemap. Ta aktualizacja HTML/XML wymaga tylko wysłania plików. Trasa w `frontend/nginx.conf` i `deploy/nginx.conf`; przy pierwszym wdrożeniu trasy sprawdź `nginx -t` i wykonaj `nginx -s reload` w kontenerze frontendu (polecenia poniżej). Bez przebudowy obrazów. Nie wykonano zdalnego wdrożenia w ramach tej zmiany.
 
 - Końcowy test w `build.sh` używa `http://127.0.0.1/`: BusyBox `wget` wybiera dla `localhost` IPv6 `::1`, podczas gdy frontend nasłuchuje na IPv4. Błąd odtworzony lokalnie; IPv4 zwraca 200. Zgłoszenie użytkownika: kontenery na VPS uruchomione, skrypt zakończył się na tym teście. Po takim błędzie sprawdź na VPS `docker compose -f compose.yml exec -T frontend wget -S -O /dev/null http://127.0.0.1/`; nie trzeba ponownie budować obrazów tylko z powodu zmiany adresu testu.
 

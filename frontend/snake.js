@@ -170,6 +170,10 @@
   }
 
   function setMode(value) {
+    if ((value === 'level' || value === 'won') && mode !== value) {
+      window.dimundiTrack?.('snake_level_complete', { level: level + 1, score });
+      if (value === 'won') window.dimundiTrack?.('snake_complete', { level: level + 1, score });
+    }
     mode = value;
     stateEl.textContent = { ready: 'ready', running: 'running…', paused: 'paused', over: 'game over', level: 'Enter — next level', won: 'all levels complete!' }[mode];
     play.textContent = mode === 'running' ? 'pause' : mode === 'paused' ? 'resume' : mode === 'level' ? 'next level' : 'start';
@@ -229,6 +233,7 @@
     if (!ctx || !isOpen() || document.hidden || mode === 'running') return;
     if (mode === 'over' || mode === 'won') reset();
     else if (mode === 'level') { level++; prepareLevel(); }
+    if (mode === 'ready' && level === 0) window.dimundiTrack?.('snake_start', { level: 1, score });
     setMode('running');
     canvas.focus({ preventScroll: true });
     schedule();
