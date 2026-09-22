@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dimundi social preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=IBM+Plex+Mono:wght@500&display=block" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+    body {
+      display: grid;
+      place-items: center;
+      background: #fafbff;
+      color: #1f376b;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(0deg, transparent 0 3px, #294a9006 3px 4px);
+    }
+    .brand { display: grid; gap: 12px; transform: translateY(-12px); }
+    .name { font: 208px/0.85 'VT323', monospace; white-space: nowrap; }
+    .accent { color: #8fb0ff; }
+    .tagline {
+      justify-self: end;
+      padding-right: 8px;
+      font: 500 26px/1.4 'IBM Plex Mono', monospace;
+      letter-spacing: 0.16em;
+      color: #506ca8;
+    }
+    .domain {
+      position: absolute;
+      bottom: 48px;
+      left: 64px;
+      font: 500 22px/1 'IBM Plex Mono', monospace;
+      color: #506ca8;
+    }
+  </style>
+</head>
+<body>
+  <div class="brand">
+    <div class="name"><span class="accent">di</span>mundi_</div>
+    <div class="tagline">CREATIVE IT</div>
+  </div>
+  <div class="domain">dimundi.com</div>
+</body>
+</html>
