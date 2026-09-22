@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!--# include virtual="/partials/head.html" -->
+  <meta name="robots" content="noindex" />
+  <title>snake.exe | Dimundi</title>
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <main id="snake-app" aria-labelledby="snake-title">
+    <h1 id="snake-title" class="page-title">
+      <!--# include virtual="/partials/home-link.html" -->
+      <span>snake.exe</span>
+    </h1>
+    <div id="snake-root"></div>
+    <noscript>Snake requires JavaScript.</noscript>
+    <a class="snake-back" href="/about">cd ../about</a>
+  </main>
+  <!--# include virtual="/partials/footer.html" -->
+  <script src="/script.js" defer></script>
+  <script src="/snake.js" defer></script>
+</body>
+</html>

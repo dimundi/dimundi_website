@@ -138,6 +138,8 @@ docker compose -f compose.yml logs --tail=100 proxy
 
 ### Kolejne aktualizacje
 
+- Snake: `/snake` otwierane z About w nowej karcie, `frontend/snake.html` i cała gra z animacją startową w `frontend/snake.js`. Strona ma `noindex`, bez wpisu w sitemap. Nowa trasa w `frontend/nginx.conf` i `deploy/nginx.conf`; po wysłaniu przez `deploy/install.bat` sprawdź `nginx -t` i wykonaj `nginx -s reload` w kontenerze frontendu (polecenia poniżej). Bez przebudowy obrazów. Zmiana przygotowana i sprawdzana lokalnie, bez wdrożenia na VPS.
+
 - Końcowy test w `build.sh` używa `http://127.0.0.1/`: BusyBox `wget` wybiera dla `localhost` IPv6 `::1`, podczas gdy frontend nasłuchuje na IPv4. Błąd odtworzony lokalnie; IPv4 zwraca 200. Zgłoszenie użytkownika: kontenery na VPS uruchomione, skrypt zakończył się na tym teście. Po takim błędzie sprawdź na VPS `docker compose -f compose.yml exec -T frontend wget -S -O /dev/null http://127.0.0.1/`; nie trzeba ponownie budować obrazów tylko z powodu zmiany adresu testu.
 
 - Formularz antyspamowy: Turnstile sprawdzany na backendzie (token, hostname, action `contact`), honeypot i limity 5 prób/IP/15 min oraz 30 wysyłek/h łącznie. Limity są w pamięci jednego procesu i zerują się po restarcie; przy skalowaniu backendu wymagają wspólnego magazynu. Backend pozostaje bez publicznego portu. Oba frontendowe Nginx przekazują `X-Forwarded-For` nadpisany na wejściu przez proxy; Express ufa jednemu pośrednikowi. Nie wystawiać frontendu produkcyjnego bezpośrednio do Internetu.
