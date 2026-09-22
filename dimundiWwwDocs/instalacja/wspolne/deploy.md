@@ -70,13 +70,21 @@ Skrypt serwerowy pyta o budowanie, buduje obraz, sprawdza konfigurację w tymcza
 
 Pliki znajdują się w głównym katalogu `deploy/`: `install.bat`, `build.sh`, `compose.yml`, `Dockerfile-frontend` i `nginx.conf`. Backend jest budowany z istniejącego `backend/Dockerfile`.
 
+### Podział konfiguracji backendu
+
+- `deploy/backend.env`: wersjonowany i wysyłany przy wdrożeniu; `PORT`, `CORS_ORIGIN`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `TURNSTILE_HOSTNAMES`. Bez haseł, kluczy i danych kontaktowych.
+- `/home/docker/dimundi/app/backend/.env`: prywatny, tylko na VPS; `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, `MAIL_TO`, `CONTACT_EMAIL`, `CONTACT_PHONE`, `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. Nie jest dotykany przez instalator.
+- Compose ładuje najpierw plik ogólny, potem prywatny. Istniejący `.env` pozostaje działający bez przenoszenia sekretów. Jeżeli zawiera też zmienne ogólne, nadal je nadpisuje — usuń daną zmienną z prywatnego pliku dopiero, gdy chcesz zarządzać nią przez `deploy/backend.env`.
+- Pierwsza instalacja: po wysłaniu plików utwórz prywatny plik bezpośrednio na VPS (`umask 077`, następnie `nano /home/docker/dimundi/app/backend/.env`) i uzupełnij wskazane wyżej wartości. Ustaw `chmod 600 /home/docker/dimundi/app/backend/.env`. Nie zastępuj istniejącego pliku szablonem.
+- Brak któregokolwiek pliku zatrzymuje `build.sh`. Zmiany przygotowane w repo; zastosowanie wymaga wysłania nowego Compose i uruchomienia skryptu na VPS. Lokalny Compose testowy nadal korzysta z lokalnego `backend/.env`.
+
 ### Procedura krok po kroku — działające proxy, pierwsze wdrożenie strony
 
 Punktem wyjścia jest działające proxy z napisem „Proxy działa”. Poniższe polecenia lokalne wykonuj w PowerShell w głównym katalogu projektu; polecenia serwerowe w sesji SSH użytkownika `docker`.
 
 **1. Lokalnie: sprawdź konfigurację.**
 
-Plik `deploy.config` musi zawierać `SSH_KEY` ze ścieżką do klucza. Jeśli go brakuje, skopiuj `deploy.config_tmp` jako `deploy.config` i uzupełnij ścieżkę. Przygotuj również `backend/.env` z właściwymi danymi kontaktowymi i SMTP, korzystając z `backend/.env_tmpl`. Nie nadpisuj już uzupełnionych plików wzorami.
+Plik `deploy.config` musi zawierać `SSH_KEY` ze ścieżką do klucza. Jeśli go brakuje, skopiuj `deploy.config_tmp` jako `deploy.config` i uzupełnij ścieżkę. Sprawdź ustawienia ogólne w `deploy/backend.env`. Prywatny `backend/.env` tworzysz i edytujesz wyłącznie na VPS; instalator go nie przesyła. Lokalny `.env` służy tylko do testów.
 
 **2. Lokalnie: wyślij aplikację.**
 
@@ -87,7 +95,7 @@ Plik `deploy.config` musi zawierać `SSH_KEY` ze ścieżką do klucza. Jeśli go
 | Pytanie skryptu | Odpowiedź |
 | --- | --- |
 | Wysłać pliki strony, backendu i wdrożenia? | `t` |
-| Wysłać lokalny `backend/.env`? | `t`, jeśli lokalny plik jest gotowy i ma zostać użyty na VPS; `n`, jeśli poprawny plik jest już na serwerze |
+Prywatny `backend/.env` nie jest wysyłany; nie ma pytania o jego nadpisanie.
 
 Po błędzie wysyłania zatrzymaj procedurę i usuń przyczynę. Samo wysłanie plików nie uruchamia kontenerów.
 
@@ -130,21 +138,27 @@ docker compose -f compose.yml logs --tail=100 proxy
 
 ### Kolejne aktualizacje
 
+- Końcowy test w `build.sh` używa `http://127.0.0.1/`: BusyBox `wget` wybiera dla `localhost` IPv6 `::1`, podczas gdy frontend nasłuchuje na IPv4. Błąd odtworzony lokalnie; IPv4 zwraca 200. Zgłoszenie użytkownika: kontenery na VPS uruchomione, skrypt zakończył się na tym teście. Po takim błędzie sprawdź na VPS `docker compose -f compose.yml exec -T frontend wget -S -O /dev/null http://127.0.0.1/`; nie trzeba ponownie budować obrazów tylko z powodu zmiany adresu testu.
+
+- Formularz antyspamowy: Turnstile sprawdzany na backendzie (token, hostname, action `contact`), honeypot i limity 5 prób/IP/15 min oraz 30 wysyłek/h łącznie. Limity są w pamięci jednego procesu i zerują się po restarcie; przy skalowaniu backendu wymagają wspólnego magazynu. Backend pozostaje bez publicznego portu. Oba frontendowe Nginx przekazują `X-Forwarded-For` nadpisany na wejściu przez proxy; Express ufa jednemu pośrednikowi. Nie wystawiać frontendu produkcyjnego bezpośrednio do Internetu.
+- Przed uruchomieniem nowego backendu ustaw na VPS w `/home/docker/dimundi/app/backend/.env`: `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`. `TURNSTILE_HOSTNAMES=dimundi.com` jest w aktualizowanym `deploy/backend.env`. Wymagane też `MAIL_FROM` i `MAIL_TO`. Bez konfiguracji lub przy awarii weryfikacji wysyłanie jest zablokowane; odsłanianie e-maila/telefonu również wymaga Turnstile. Frontend pobiera tylko publiczny site key przez `/api/contact-config`. GET `/api/contact-data` zwraca 405; POST wymaga tokenu z action `contact_email` lub `contact_phone` i zwraca tylko wybraną daną (bez cache), limit 10 prób/IP/15 min.
+- Wdrożenie antyspamu: `deploy/install.bat` wysyła też `backend/app.js`; przesyła ustawienia ogólne `deploy/backend.env`, nigdy prywatny `backend/.env`. Następnie `bash build.sh` w katalogu aplikacji na VPS (budowanie i uruchomienie). Nie wdrożono zdalnie w ramach przygotowania kodu. Instrukcja i lista sprawdzeń: [Formularz — Turnstile](../../formularz-antyspam.md).
+
 - Adresy podstron bez rozszerzeń: `/about`, `/solutions`, `/contact`; pliki pozostają `.html` (adres `/solutions` obsługuje `services.html`). `/services`, `/services/` i `/services.html` przekierowują 301 bezpośrednio na `/solutions`. Stare adresy `.html`, warianty z końcowym `/` i `/index.html` przekierowują 301 z zachowaniem parametrów. Linki, canonical i sitemap używają nowych adresów. Przekierowania względne zachowują HTTPS i port lokalnego proxy. Po wysłaniu plików sprawdź i przeładuj Nginx frontendu jak dla konfiguracji 404 poniżej.
 
 - Własna strona 404: `frontend/404.html`, SSI i `error_page 404 /404.html` w obu konfiguracjach frontendu. Zachowuje HTTP 404; nie dodajemy jej do sitemap. Przygotowana lokalnie, wymaga wysłania plików i przeładowania Nginx.
 - Po wysłaniu konfiguracji 404 wykonaj na VPS z `/home/docker/dimundi/app/deploy`: `docker compose -f compose.yml exec -T frontend nginx -t` i dopiero po sukcesie `docker compose -f compose.yml exec -T frontend nginx -s reload`. Sprawdź `curl -i https://dimundi.com/test/brak-strony`: HTTP 404 i własny HTML.
 - Instalator nie usuwa starych plików: po usunięciu Projects z repo usuń także `/home/docker/dimundi/app/frontend/projects.html` i `/home/docker/dimundi/app/frontend/wgs.jpg` na VPS (`rm -f --` z tymi dwoma pełnymi ścieżkami).
 
-- Tylko treść strony: uruchom lokalnie `deploy/install.bat`; zaakceptuj wysłanie plików i pomiń `.env`, jeśli nie zmieniasz danych. Zmiany frontendu są widoczne bez budowania i restartu.
+- Tylko treść strony: uruchom lokalnie `deploy/install.bat`; zaakceptuj wysłanie plików; prywatny `.env` pozostaje bez zmian. Zmiany frontendu są widoczne bez budowania i restartu.
 - Backend, Compose, obraz lub konfiguracja Nginx frontendu: po wysłaniu plików uruchom na VPS `bash build.sh` z katalogu aplikacji jak powyżej.
-- Dane w `backend/.env`: zaakceptuj ich wysłanie i uruchom `bash build.sh`, aby kontener wczytał nowe środowisko.
+- Ustawienia ogólne: edytuj `deploy/backend.env` w repo i wyślij instalatorem. Prywatne: edytuj `backend/.env` bezpośrednio na VPS. Po zmianie któregokolwiek pliku uruchom `bash build.sh`, aby odtworzony kontener wczytał nowe środowisko.
 - Tylko konfiguracja proxy: uruchom `install-proxy.bat` i odpowiedz kolejno `t`, `n`, `t`.
 
 ### Szczegóły działania skryptów
 
 1. Uruchom lokalnie `deploy/install.bat`. Korzysta ze wspólnego `deploy.config`. Po potwierdzeniu `t` wysyła frontend, jawnie wybrane źródła backendu oraz pliki wdrożenia do `/home/docker/dimundi/app`.
-2. Osobne pytanie `t/n` pozwala przesłać `backend/.env`. To nadpisuje konfigurację backendu na VPS; plik ma uprawnienia 600. Przy `n` istniejący plik pozostaje bez zmian. Przy pierwszym wdrożeniu trzeba go wysłać albo utworzyć ręcznie z wzoru i uzupełnić. Pliki `.env` są wykluczone z kontekstu budowania obrazu.
+2. Instalator zawsze wysyła `deploy/backend.env` z ustawieniami ogólnymi. Nigdy nie wysyła ani nie tworzy prywatnego `backend/.env` na VPS. Compose wczytuje pliki w tej kolejności: ogólny, prywatny; prywatne wartości wygrywają. Przy pierwszym wdrożeniu utwórz prywatny plik na VPS z uprawnieniami 600. Pliki `.env` są wykluczone z kontekstu budowania obrazu.
 3. Na VPS wykonaj:
 
 ```sh
@@ -219,7 +233,7 @@ Nie trzeba ponownie wystawiać certyfikatu, aby dodać samo odnawianie.
 
 ### 4. Zaktualizuj konfigurację aplikacji
 
-Compose aplikacji ma teraz `CORS_ORIGIN: https://dimundi.com`. Wyślij pliki przez `deploy/install.bat` (pomiń `.env`, jeśli dane się nie zmieniają), następnie jako `docker`:
+`deploy/backend.env` ustawia `CORS_ORIGIN=https://dimundi.com`. Wyślij pliki przez `deploy/install.bat`, następnie jako `docker`:
 
 ```sh
 cd /home/docker/dimundi/app/deploy

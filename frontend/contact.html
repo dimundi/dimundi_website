@@ -20,16 +20,21 @@
       </div>
 
       <div class="contact-details" aria-label="Contact details">
-        <p id="contact-details-status" role="status">Loading contact details…</p>
-        <div id="contact-details-values" hidden>
-          <p><span class="footer-el">Email:</span> <a data-contact-email></a></p>
-          <p><span class="footer-el">Phone:</span> <a data-contact-phone></a></p>
+        <div id="contact-details-values">
+          <p><span class="footer-el">Email:</span> <button class="contact-reveal" type="button" data-reveal="email">Show email</button> <a data-contact-email hidden></a></p>
+          <p><span class="footer-el">Phone:</span> <button class="contact-reveal" type="button" data-reveal="phone">Show phone</button> <a data-contact-phone hidden></a></p>
         </div>
+        <div id="contact-details-verification" hidden></div>
+        <p id="contact-details-status" role="status" hidden></p>
       </div>
 
       <form class="terminal-form" id="contact-form" novalidate>
         <fieldset class="contact-fields" id="contact-fields">
           <legend>Send us a message</legend>
+          <div class="contact-honeypot" aria-hidden="true" inert>
+            <label for="contact-website">Website</label>
+            <input id="contact-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+          </div>
           <div class="contact-field">
             <label for="contact-name">Name</label>
             <input id="contact-name" name="name" type="text" autocomplete="name" maxlength="80" required />
@@ -42,7 +47,8 @@
             <label for="contact-message">Message</label>
             <textarea id="contact-message" name="message" rows="6" maxlength="2000" required></textarea>
           </div>
-          <button class="contact-submit" type="submit">Send message</button>
+          <div id="contact-verification" class="contact-verification"></div>
+          <button class="contact-submit" type="submit" disabled>Send message</button>
         </fieldset>
         <p class="form-status" id="form-status" role="status"></p>
       </form>
@@ -54,6 +60,7 @@
   <!--# include virtual="/partials/footer.html" -->
 
   <script src="script.js" defer></script>
+  <script src="/turnstile.js" defer></script>
   <script src="contact-details.js" defer></script>
   <script src="contact.js" defer></script>
 </body>
