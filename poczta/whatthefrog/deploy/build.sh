@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 require_vps
-ip -4 -o addr show | grep -q '54\.38\.134\.226/32' || {
-    echo 'Brak Additional IP 54.38.134.226/32 na VPS.'; exit 1;
+ip -4 -o addr show | grep -q '51\.38\.158\.255/32' || {
+    echo 'Brak Additional IP 51.38.158.255/32 na VPS.'; exit 1;
 }
 free -h
 df -h ..
@@ -19,7 +19,7 @@ dc config --quiet
 dc pull
 echo 'Obrazy gotowe. Certyfikat: bash setup-tls.sh; konta: bash accounts.sh.'
 confirm 'Uruchomic/odtworzyc kontenery? Wymaga gotowego certyfikatu i przynajmniej jednego konta.' || exit 0
-dc run --rm --no-deps --entrypoint bash mailserver -c 'test -s /tmp/docker-mailserver/postfix-accounts.cf && test -s /etc/letsencrypt/live/poczta.whatthefrog.pl/fullchain.pem && test -s /etc/letsencrypt/live/poczta.whatthefrog.pl/privkey.pem' || {
+dc run --rm --no-deps --entrypoint bash mailserver -c 'grep -qF "marcin@whathefrog.pl|" /tmp/docker-mailserver/postfix-accounts.cf && test -s /etc/letsencrypt/live/poczta.whathefrog.pl/fullchain.pem && test -s /etc/letsencrypt/live/poczta.whathefrog.pl/privkey.pem' || {
     echo 'Brak kont lub certyfikatu. Wykonaj accounts.sh i setup-tls.sh.'; exit 1;
 }
 dc up -d --no-build --wait --wait-timeout 300
